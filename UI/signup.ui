@@ -39,7 +39,8 @@ QLineEdit {
 #reset_btn,
 #ph_nmbr_lbl,
 #Name_lbl,
-#signup_btn {
+#signup_btn,
+#text_lbl {
     font-size: 22px;
 }
 
@@ -84,7 +85,7 @@ QLineEdit {
 #sign_in_btn {
     color: #fff; /* Set text color to white */
     background-color: #1877F2; /* Set background color to a specific shade of blue */
-    border-radius: 5px; /* Apply rounded corners to the login button */
+    border-radius: 9px; /* Apply rounded corners to the login button */
     min-height: 40px; /* Set a minimum height for the login button */
     padding: 10px; /* Add padding inside the login button */
     margin: 20px 0; /* Add margin to the top and bottom of the login button */
@@ -106,6 +107,20 @@ QLineEdit {
 #signup_btn:hover {
     color: #1877F2;
 }
+#myself_rad,#child_rad{
+font-size:15px;
+}
+
+
+#myself_rad:hover ,
+#child_rad:hover {
+color:#1877F2;
+}
+#myself_rad:checked ,
+#child_rad:checked {
+color:#1877F2;
+}
+
 </string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -116,7 +131,7 @@ QLineEdit {
      <number>70</number>
     </property>
     <property name="bottomMargin">
-     <number>0</number>
+     <number>20</number>
     </property>
     <item>
      <widget class="QLabel" name="Signup_lbl">
@@ -434,6 +449,34 @@ QLineEdit {
           </widget>
          </item>
         </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="text_lbl">
+      <property name="text">
+       <string>Your are using Samadhan for?</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="topMargin">
+       <number>15</number>
+      </property>
+      <item>
+       <widget class="QRadioButton" name="child_rad">
+        <property name="text">
+         <string>For my child</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="myself_rad">
+        <property name="text">
+         <string>For myself</string>
+        </property>
        </widget>
       </item>
      </layout>
