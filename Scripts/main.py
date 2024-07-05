@@ -17,11 +17,21 @@ class MyMainWindow(QtWidgets.QMainWindow):
     def get_signup_window(self):
         self.signup_window.show()
         self.login_window.close()
+        for line_edit in self.login_window.findChildren(QtWidgets.QLineEdit):
+            line_edit.clear()
+
     
     def get_login_window(self):
         self.login_window.show()
         self.signup_window.close()
-
+        for line_edit in self.signup_window.findChildren(QtWidgets.QLineEdit):
+            line_edit.clear()
+    
+        for radio in self.signup_window.findChildren(QtWidgets.QRadioButton):
+            if radio.isChecked():
+                radio.setChecked(False) 
+            
+            
 def main():
     app=QtWidgets.QApplication(sys.argv)
     win=MyMainWindow()
