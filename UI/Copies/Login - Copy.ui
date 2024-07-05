@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>450</width>
+    <height>484</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+/* Set style for the main window: font family and background color */ /* This applies to all the widgets within the application */ QWidget {
+}
+font-family: Segoe UI Semibold; background-color: #fff;
+/* Set font size for specific widgets */
+</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">/* Set style for the main window: font family and background color */
+/* This applies to all the widgets within the application */
+QWidget {
+    font-family: &quot;Segoe UI Semibold&quot;;
+    background-color: #fff;
+}
+
+/* Set font size for specific widgets */
+#create_acc_label {
+    font-size: 30px;
+}
+
+#google_btn,
+#fb_btn,
+#or_lbl,
+QLineEdit {
+    font-size: 23px;
+}
+
+#email_lbl,
+#pswrd_lbl,
+#reset_btn,
+#signup_btn {
+    font-size: 22px;
+}
+
+#login_btn {
+    font-size: 25px;
+}
+
+/* Style for google and facebook login buttons */
+#google_btn,
+#fb_btn {
+    border: 1px solid #1877F2; /* Add a border with a specific color to these buttons */
+    border-radius: 9px; /* Apply rounded corners to these buttons */
+    min-height: 40px; /* Set a minimum height for these buttons */
+}
+
+#google_btn:hover,
+#fb_btn:hover {
+    background-color: #000; /* Change the background color on hover */
+    color: #fff; /* Change text color on hover */
+}
+
+/* Style for &quot;Or&quot; label */
+#or_lbl {
+    text-align: center;
+    min-width: 30px;
+    max-width: 30px;
+}
+
+/* Style for email and password input sections */
+#email_frame,
+#password_frame {
+    border: 1px solid #000;
+    border-radius: 9px;
+}
+
+QLineEdit {
+    border: none;
+}
+
+/* Style for the login button */
+#login_btn {
+    color: #fff; /* Set text color to white */
+    background-color: #1877F2; /* Set background color to a specific shade of blue */
+    border-radius: 9px; /* Apply rounded corners to the login button */
+    min-height: 40px; /* Set a minimum height for the login button */
+    padding: 10px; /* Add padding inside the login button */
+    margin: 20px 0; /* Add margin to the top and bottom of the login button */
+}
+
+#login_btn:hover {
+    background-color: #000; /* Change the background color on hover */
+}
+
+/* Style for reset and sign-in buttons */
+#reset_btn,
+#signup_btn {
+    color: #000;
+    border: none;
+    text-align: left;
+}
+
+#reset_btn:hover,
+#signup_btn:hover {
+    color: #1877F2;
+}
+</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <property name="spacing">
+     <number>15</number>
+    </property>
+    <property name="leftMargin">
+     <number>70</number>
+    </property>
+    <property name="topMargin">
+     <number>30</number>
+    </property>
+    <property name="rightMargin">
+     <number>70</number>
+    </property>
+    <property name="bottomMargin">
+     <number>60</number>
+    </property>
+    <item>
+     <widget class="QLabel" name="create_acc_label">
+      <property name="text">
+       <string>Create Your Account</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="google_btn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>Use Google</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>menu_bar/img/google.png</normaloff>menu_bar/img/google.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>25</width>
+          <height>25</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="fb_btn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>Use Facebook</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>menu_bar/img/fb (1).png</normaloff>menu_bar/img/fb (1).png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>25</width>
+          <height>25</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="Line" name="line_1">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="or_lbl">
+        <property name="text">
+         <string>OR</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="email_lbl">
+        <property name="text">
+         <string>Email</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="email_frame">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="leftMargin">
+          <number>10</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="email_line_edit">
+           <property name="maxLength">
+            <number>30</number>
+           </property>
+           <property name="placeholderText">
+            <string>Email</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="at">
+           <property name="minimumSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap>menu_bar/img/at-solid.svg</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="pswrd_lbl">
+        <property name="text">
+         <string>Password</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="password_frame">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="leftMargin">
+          <number>10</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="pswrd_line_edit">
+           <property name="maxLength">
+            <number>20</number>
+           </property>
+           <property name="echoMode">
+            <enum>QLineEdit::Password</enum>
+           </property>
+           <property name="placeholderText">
+            <string>Password</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lock">
+           <property name="minimumSize">
+            <size>
+             <width>17</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>17</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap>menu_bar/img/lock-solid.svg</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="login_btn">
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
+      <property name="text">
+       <string>Login</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,0">
+      <property name="spacing">
+       <number>50</number>
+      </property>
+      <property name="leftMargin">
+       <number>20</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="reset_btn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>Reset Password</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="signup_btn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>Want to Create an Account?</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>450</width>
+     <height>18</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
