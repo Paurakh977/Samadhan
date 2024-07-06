@@ -18,6 +18,7 @@ class LoginWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("SAMADHAN")
         
         self.go_to_signup=self.findChild(QtWidgets.QPushButton,"signup_btn")
+        self.login_btn=self.findChild(QtWidgets.QAbstractButton,"login_btn")
         
 
 
