@@ -1,1 +1,1 @@
-eta db haru rakhne
+SQL DATABASE
