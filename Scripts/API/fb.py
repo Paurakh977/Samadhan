@@ -1,18 +1,23 @@
 import sys
 import webbrowser
 import requests
-from flask import Flask, request, redirect
+from flask import Flask, request
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtCore import QThread, pyqtSignal, QObject
 
 # Flask application setup
 app = Flask(__name__)
-app.secret_key = '6a0cc1c6ba2bf2304d9f0bc36d825456'
+app.secret_key = '6a0cc1c6ba2bf2304d9f0bc36d825456'  # Your secret key here
 
-# Facebook app details
+# Facebook app details (replace with your actual client ID and secret)
 client_id = '1642745376490841'
 client_secret = '6a0cc1c6ba2bf2304d9f0bc36d825456'
 redirect_uri = 'http://localhost:5000/callback'
 scope = 'email'
+
+# Custom signal class
+class SignalEmitter(QObject):
+    window_closed = pyqtSignal()
 
 # PyQt5 application window
 class MainWindow(QMainWindow):
@@ -40,6 +45,10 @@ class MainWindow(QMainWindow):
     def login_with_facebook(self):
         auth_url = f'https://www.facebook.com/v20.0/dialog/oauth?client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}'
         webbrowser.open(auth_url)
+
+    def closeEvent(self, event):
+        self.signal_emitter.window_closed.emit()  # Emit the custom signal when window is closed
+        event.accept()
 
 # Flask routes
 @app.route('/')
@@ -88,11 +97,15 @@ def shutdown_server():
 
 if __name__ == '__main__':
     # Start Flask in a separate thread
-    from threading import Thread
-    Thread(target=app.run, kwargs={'debug': False}).start()
+    server_thread = QThread()
+    server_thread.run = lambda: app.run(debug=False)
+    server_thread.start()
 
     # Start PyQt5 application
     app = QApplication(sys.argv)
+    signal_emitter = SignalEmitter()  # Create an instance of the custom signal emitter
     main_window = MainWindow()
+    main_window.signal_emitter = signal_emitter  # Assign the signal emitter to main_window
+    signal_emitter.window_closed.connect(shutdown_server)  # Connect window_closed signal to shutdown_server
     main_window.show()
     sys.exit(app.exec_())
