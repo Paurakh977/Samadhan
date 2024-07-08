@@ -4,7 +4,8 @@ import requests
 from flask import Flask, request
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
-
+from PyQt5.uic import loadUi
+from PyQt5 import QtWidgets
 # Flask application setup
 app = Flask(__name__)
 app.secret_key = '6a0cc1c6ba2bf2304d9f0bc36d825456'  # Your secret key here
@@ -20,28 +21,22 @@ class SignalEmitter(QObject):
     window_closed = pyqtSignal()
 
 # PyQt5 application window
-class MainWindow(QMainWindow):
+class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Facebook OAuth Login')
-        self.setGeometry(100, 100, 400, 200)
+        self.setGeometry(600,200,600,800)
+        self.setWindowTitle("SAMADHAN")
+        loadUi(r"C:\Users\pande\OneDrive\Desktop\PyQt\Samadhan-App\UI\Login.ui",self)
 
-        layout = QVBoxLayout()
-
-        self.label = QLabel('Click below to login with Facebook')
-        layout.addWidget(self.label)
-
-        self.login_button = QPushButton('Login with Facebook')
-        self.login_button.clicked.connect(self.login_with_facebook)
-        layout.addWidget(self.login_button)
-
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
-
+        self.go_to_signup=self.findChild(QtWidgets.QPushButton,"signup_btn")
+        self.login_btn=self.findChild(QtWidgets.QAbstractButton,"login_btn")
+        
+        self.fb_login_btn=self.findChild(QPushButton,"fb_btn")
+        self.fb_login_btn.clicked.connect(self.login_with_facebook)
+       
     def login_with_facebook(self):
         auth_url = f'https://www.facebook.com/v20.0/dialog/oauth?client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}'
         webbrowser.open(auth_url)
@@ -83,7 +78,7 @@ def callback():
     user_data = user_response.json()
 
     # Update GUI with user info
-    main_window.label.setText(f"Hello, {user_data['name']}. Your email is: {user_data['email']}")
+    print(f"Hello, {user_data['name']}. Your email is: {user_data['email']}")
 
     # Shutdown Flask server
     shutdown_server()
@@ -104,7 +99,7 @@ if __name__ == '__main__':
     # Start PyQt5 application
     app = QApplication(sys.argv)
     signal_emitter = SignalEmitter()  # Create an instance of the custom signal emitter
-    main_window = MainWindow()
+    main_window = LoginWindow()
     main_window.signal_emitter = signal_emitter  # Assign the signal emitter to main_window
     signal_emitter.window_closed.connect(shutdown_server)  # Connect window_closed signal to shutdown_server
     main_window.show()
