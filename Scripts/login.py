@@ -1,11 +1,12 @@
-import sys,os
+import sys,os,logging
 from PyQt5 import QtWidgets
 from PyQt5.uic import loadUi
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 
 class LoginWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        
         this_file_location=os.path.dirname(__file__)
         ui_file_location=os.path.abspath(os.path.join(this_file_location,"..","UI","Login.ui"))
         
@@ -19,8 +20,35 @@ class LoginWindow(QtWidgets.QMainWindow):
         
         self.go_to_signup=self.findChild(QtWidgets.QPushButton,"signup_btn")
         self.login_btn=self.findChild(QtWidgets.QAbstractButton,"login_btn")
+        self.google_login_btn=self.findChild(QtWidgets.QPushButton,"google_btn")
+        self.google_login_btn.clicked.connect(self.login_with_google)
         
+        
+        
+    def login_with_google(self):
+        creds_file = os.path.join(os.path.dirname(__file__),"API", 'credentials.json')
+        scopes = ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid']
 
+        try:
+            flow = InstalledAppFlow.from_client_secrets_file(creds_file, scopes)
+            creds = flow.run_local_server(port=0)
+        except Exception as e:
+            logging.error(f"Error during authentication: {e}")
+            return
+
+        try:
+            # Use the credentials to build the People API service
+            service = build('people', 'v1', credentials=creds)
+            profile = service.people().get(resourceName='people/me', personFields='names,emailAddresses').execute()
+
+            # Retrieve the uaser's name and email
+            name = profile.get('names', [{}])[0].get('displayName', 'N/A')
+            email = profile.get('emailAddresses', [{}])[0].get('value', 'N/A')
+
+            # Update the label with the user's name and email
+            print(f'Name: {name}\nEmail: {email}')
+        except Exception as e:
+            logging.error(f"Error retrieving profile information: {e}")
 
 def main():
     app=QtWidgets.QApplication(sys.argv)

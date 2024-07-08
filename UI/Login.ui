@@ -132,7 +132,7 @@ QLineEdit {
     <item>
      <widget class="QLabel" name="create_acc_label">
       <property name="text">
-       <string>Create Your Account</string>
+       <string>Login to Samadhan</string>
       </property>
      </widget>
     </item>

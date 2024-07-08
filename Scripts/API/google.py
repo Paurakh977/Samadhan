@@ -50,7 +50,6 @@ class GoogleLoginApp(QWidget):
             email = profile.get('emailAddresses', [{}])[0].get('value', 'N/A')
 
             # Update the label with the user's name and email
-            self.result_label.setText(f'Name: {name}\nEmail: {email}')
             print(f'Name: {name}\nEmail: {email}')
         except Exception as e:
             logging.error(f"Error retrieving profile information: {e}")
