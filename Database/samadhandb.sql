@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 10, 2024 at 02:46 AM
+-- Generation Time: Jul 10, 2024 at 05:52 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -55,23 +55,27 @@ INSERT INTO `app_usage_info` (`tab_name`, `used_time`, `browser`, `SN`, `used_da
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_info`
+-- Table structure for table `user_info_google`
 --
 
-CREATE TABLE `user_info` (
+CREATE TABLE `user_info_google` (
   `ID` int(11) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `username` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
-  `account_type` varchar(50) DEFAULT NULL
+  `logged_in_status` tinyint(1) NOT NULL DEFAULT 0,
+  `serial_id` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `user_info`
+-- Dumping data for table `user_info_google`
 --
 
-INSERT INTO `user_info` (`ID`, `email`, `username`, `password`, `account_type`) VALUES
-(2, 'yareyaredazey108@gmail.com', 'Jet Blackwing', NULL, 'Google');
+INSERT INTO `user_info_google` (`ID`, `email`, `username`, `password`, `logged_in_status`, `serial_id`) VALUES
+(2, 'yareyaredazey108@gmail.com', 'Jet Blackwing', NULL, 0, NULL),
+(5, 'paurakh.pandey@sifal.deerwalk.edu.np', 'Paurakh Raj Pandey', NULL, 0, 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
+(6, 'dollarchaeyo@gmail.com', 'Dollar Chaeyo', NULL, 0, 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
+(7, 'pandeypaurakhraj@gmail.com', 'Paurakh Raj Pandey', NULL, 0, 'f8a294e2-f241-4eca-a964-c0c88c21f3c2');
 
 --
 -- Indexes for dumped tables
@@ -84,9 +88,9 @@ ALTER TABLE `app_usage_info`
   ADD PRIMARY KEY (`SN`);
 
 --
--- Indexes for table `user_info`
+-- Indexes for table `user_info_google`
 --
-ALTER TABLE `user_info`
+ALTER TABLE `user_info_google`
   ADD PRIMARY KEY (`ID`);
 
 --
@@ -100,10 +104,10 @@ ALTER TABLE `app_usage_info`
   MODIFY `SN` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
--- AUTO_INCREMENT for table `user_info`
+-- AUTO_INCREMENT for table `user_info_google`
 --
-ALTER TABLE `user_info`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+ALTER TABLE `user_info_google`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
