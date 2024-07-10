@@ -220,7 +220,7 @@ QPushButton:checked{
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="back1">
+          <widget class="QPushButton" name="back_1">
            <property name="cursor">
             <cursorShape>PointingHandCursor</cursorShape>
            </property>
@@ -1080,7 +1080,7 @@ padding-left:5px;</string>
   <connection>
    <sender>back_2</sender>
    <signal>toggled(bool)</signal>
-   <receiver>back1</receiver>
+   <receiver>back_1</receiver>
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -1094,7 +1094,7 @@ padding-left:5px;</string>
    </hints>
   </connection>
   <connection>
-   <sender>back1</sender>
+   <sender>back_1</sender>
    <signal>toggled(bool)</signal>
    <receiver>back_2</receiver>
    <slot>setChecked(bool)</slot>
