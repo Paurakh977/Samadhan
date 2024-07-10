@@ -1,6 +1,8 @@
 import sys,os
 from PyQt5 import QtWidgets
 import login,signupp,menu,weekly,daily,home,calandar,info
+
+
 class MyMainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
