@@ -72,14 +72,21 @@ def handle_google_login(email):
     dbcursor = conn.cursor()
     records_query = "SELECT * FROM user_info_google  WHERE email= %s "
     dbcursor.execute(records_query, (email,))
-    records = dbcursor.fetchone()    
+    records = dbcursor.fetchone() 
+       
     if records:
-        update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email= %s"
-        dbcursor.execute(update_query,(email,))
+        serial_id=get_serial_number()
+        
+        update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
+        dbcursor.execute(update_query,(email,serial_id))
+        conn.commit()
+        
+        update_query="UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
+        dbcursor.execute(update_query,(email,serial_id))
         conn.commit()
         return True
-        
     conn.close()
+    return False
 
 def get_login_status():
     conn=get_connection()
