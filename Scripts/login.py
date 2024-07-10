@@ -4,6 +4,7 @@ from PyQt5.uic import loadUi
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from config import handle_google_login
+from main_file import MyMainWindow
 
 class LoginWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -38,17 +39,18 @@ class LoginWindow(QtWidgets.QMainWindow):
             return
 
         try:
-            # Use the credentials to build the People API service
             service = build('people', 'v1', credentials=creds)
             profile = service.people().get(resourceName='people/me', personFields='names,emailAddresses').execute()
 
-            # Retrieve the uaser's name and email
             name = profile.get('names', [{}])[0].get('displayName', 'N/A')
             email = profile.get('emailAddresses', [{}])[0].get('value', 'N/A')
-
-            # Update the label with the user's name and email
-            handle_google_login(email)
-            print(f'Name: {name}\nEmail: {email}')
+            status=handle_google_login(email)
+            if(status):
+                self.close()
+                self.main_window=MyMainWindow()
+                self.main_window.get_menu(name=name,email=email)
+            else:
+                print("unable to log in as user not resgtred")
         except Exception as e:
             logging.error(f"Error retrieving profile information: {e}")
 

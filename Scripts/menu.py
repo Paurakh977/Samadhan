@@ -1,9 +1,13 @@
 from PyQt5 import QtWidgets
 import sys,os,A,B,weekly,daily,home,calandar,info
 from PyQt5.uic import loadUi
+from config import logout_user
+import main_file 
 
 class MenuWindow(QtWidgets.QMainWindow):
     def __init__(self):
+        self.username=None
+        self.email=None
         super().__init__()
         
         this_file_location=os.path.dirname(__file__)
@@ -14,15 +18,22 @@ class MenuWindow(QtWidgets.QMainWindow):
     def setupUI(self):
         self.setWindowTitle("SAMADHAN")
         self.setGeometry(400,100,1400,900)
+        self.icon_name_widget.setHidden(True)
         
         #findingchild
         self.icon_name_widget=self.findChild(QtWidgets.QWidget,"icon_name_widget")
         self.stackWidget=self.findChild(QtWidgets.QStackedWidget,"stackedWidget")
         self.home_2=self.findChild(QtWidgets.QPushButton,"home_2")
         self.home_1=self.findChild(QtWidgets.QPushButton,"home_1")
+        self.username_lbl=self.findChild(QtWidgets.QLabel,"username_lbl")
+        self.logout_btn_2=self.findChild(QtWidgets.QPushButton,"logout_2")
+        self.logout_btn_1=self.findChild(QtWidgets.QPushButton,"logout_1")
         
+        #button connections
         
-        self.icon_name_widget.setHidden(True)
+        self.logout_btn_2.clicked.connect(self.logout)
+        self.logout_btn_1.clicked.connect(self.logout)
+        
         
         #clearing stackwidget that were used during making this using qtdesginer
         while self.stackWidget.count() > 0:
@@ -59,7 +70,16 @@ class MenuWindow(QtWidgets.QMainWindow):
     
     def get_b(self):
         self.stackWidget.setCurrentWidget(self.Bwindow)
+    
+    def logout(self):
+        email=self.email
+        logout_user(email)
+        self.main_window=main_file.MyMainWindow()
+        self.close()
+        self.main_window.get_login_window()
         
+        
+           
     
 def main():
     app=QtWidgets.QApplication(sys.argv)

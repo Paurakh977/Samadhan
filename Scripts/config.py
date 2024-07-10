@@ -1,7 +1,7 @@
 import mysql.connector
 import datetime
 from mysql.connector import Error
-
+from serial_id import get_serial_number
 def get_connection():
     """Establish and return a new database connection."""
     return mysql.connector.connect(
@@ -50,19 +50,18 @@ def insert(tab_name, used_time, browser):
             conn.close()
             print("MySQL connection is closed")
 
-def insert_user(name,email,account_type):
+def insert_user(name,email,serial_id):
     conn = get_connection()
     dbcursor = conn.cursor()
-    records_query = "SELECT * FROM user_info  WHERE email=%s"
+    records_query = "SELECT * FROM user_info_google  WHERE email=%s"
     dbcursor.execute(records_query, (email,))
 
     records = dbcursor.fetchone()    
     
     if not records:
-        if account_type == "Google":
-            query = "INSERT INTO user_info(username, email, account_type) values (%s, %s, %s)"        
-            dbcursor.execute(query,(name,email,account_type))
-            print("Signed up successfully.")
+        query = "INSERT INTO user_info_google(username, email, serial_id) values (%s, %s, %s)"        
+        dbcursor.execute(query,(name,email,serial_id))
+        print("Signed up successfully.")
     else:
         print("There is already an account associated with the chosen google account.")
     conn.commit()
@@ -71,18 +70,39 @@ def insert_user(name,email,account_type):
 def handle_google_login(email):  
     conn = get_connection()
     dbcursor = conn.cursor()
-    records_query = "SELECT * FROM user_info  WHERE email= %s "
+    records_query = "SELECT * FROM user_info_google  WHERE email= %s "
     dbcursor.execute(records_query, (email,))
     records = dbcursor.fetchone()    
-    
     if records:
-        print("Logged in succesfully.")
+        update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email= %s"
+        dbcursor.execute(update_query,(email,))
+        conn.commit()
+        return True
         
-    else:
-        print("We couldn't find any account associated with the google account.")
-    
     conn.close()
 
+def get_login_status():
+    conn=get_connection()
+    dbcursor = conn.cursor()
+    records_query = "SELECT * FROM user_info_google WHERE serial_id = %s AND logged_in_status = 1"
+    serial_id=get_serial_number()
+    dbcursor.execute(records_query,(serial_id,))
+    records = dbcursor.fetchone() 
+    conn.close()  
+    if records:
+        return True,records[2],records[1]
+    else:
+        return False,None,None
+    
+def logout_user(email):
+    conn=get_connection()
+    dbcursor = conn.cursor()
+    update_query = "UPDATE user_info_google SET logged_in_status = 0 WHERE email= %s"
+    dbcursor.execute(update_query,(email,))
+    conn.commit()
+    conn.close()
+    print(f"{email} logged out")
+    
     
 
 

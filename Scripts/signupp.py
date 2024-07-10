@@ -5,6 +5,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from config import insert_user
 import login
+from serial_id import get_serial_number
+
 
 class SignupWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -36,17 +38,14 @@ class SignupWindow(QtWidgets.QMainWindow):
             return
 
         try:
-            # Use the credentials to build the People API service
+            
             service = build('people', 'v1', credentials=creds)
             profile = service.people().get(resourceName='people/me', personFields='names,emailAddresses').execute()
 
-            # Retrieve the uaser's name and email
             name = profile.get('names', [{}])[0].get('displayName', 'N/A')
             email = profile.get('emailAddresses', [{}])[0].get('value', 'N/A')
-
-            # Update the label with the user's name and email
-            insert_user(name, email,'Google')
-            print(f'Name: {name}\nEmail: {email}')
+            serial_id=get_serial_number()
+            insert_user(name, email,serial_id)
         except Exception as e:
             logging.error(f"Error retrieving profile information: {e}")
     

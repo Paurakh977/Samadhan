@@ -1,7 +1,7 @@
 import sys,os
 from PyQt5 import QtWidgets
 import login,signupp,menu,weekly,daily,home,calandar,info
-
+from config import get_login_status
 
 class MyMainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -12,8 +12,14 @@ class MyMainWindow(QtWidgets.QMainWindow):
         self.signup_window=signupp.SignupWindow()
         self.menu_window=menu.MenuWindow()
         
-        self.login_window.show()
-        
+        status,name,email=get_login_status()
+        print(status,email)
+        if status:
+            self.get_menu(name,email)
+        else:
+            self.get_login_window()
+            
+                    
         #connections for login window
         self.login_window.go_to_signup.clicked.connect(self.get_signup_window)
         self.login_window.login_btn.clicked.connect(self.get_menu)
@@ -50,8 +56,11 @@ class MyMainWindow(QtWidgets.QMainWindow):
             if radio.isChecked():
                 radio.setChecked(False) 
     
-    def get_menu(self):
+    def get_menu(self,name,email):
+        self.menu_window.username=name
+        self.menu_window.email=email
         self.menu_window.show()
+        self.menu_window.username_lbl.setText(name.split()[0])
         self.login_window.close()
         
     def get_home(self):
