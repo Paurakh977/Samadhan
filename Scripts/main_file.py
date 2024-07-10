@@ -5,12 +5,14 @@ from config import get_login_status
 
 class MyMainWindow(QtWidgets.QMainWindow):
     def __init__(self):
+        self.history=list()
+        
         super().__init__()
         
         #Getting windows here
         self.login_window=login.LoginWindow()
         self.signup_window=signupp.SignupWindow()
-        self.menu_window=menu.MenuWindow()
+        self.menu_window=menu.MenuWindow(self.history)
         
         status,name,email=get_login_status()
         print(status,email)
@@ -64,18 +66,23 @@ class MyMainWindow(QtWidgets.QMainWindow):
         self.login_window.close()
         
     def get_home(self):
+        self.history.append(self.menu_window.stackWidget.currentIndex())
         self.menu_window.stackWidget.setCurrentWidget(self.menu_window.homeWindow)
         
     def get_daily(self):
+        self.history.append(self.menu_window.stackWidget.currentIndex())
         self.menu_window.stackWidget.setCurrentWidget(self.menu_window.dailyWindow)
 
     def get_weekly(self):
+        self.history.append(self.menu_window.stackWidget.currentIndex())
         self.menu_window.stackWidget.setCurrentWidget(self.menu_window.weeklyWindow)
 
     def get_calandar(self):
+        self.history.append(self.menu_window.stackWidget.currentIndex())
         self.menu_window.stackWidget.setCurrentWidget(self.menu_window.calandarWindow)
 
     def get_info(self):
+        self.history.append(self.menu_window.stackWidget.currentIndex())
         self.menu_window.stackWidget.setCurrentWidget(self.menu_window.infoWindow)
          
 def main():
