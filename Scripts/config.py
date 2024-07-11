@@ -11,8 +11,7 @@ def get_connection():
         database="samadhandb"
     )
     
-conn = get_connection()
-dbcursor = conn.cursor()
+
 
 def insert(tab_name, used_time, browser):
     try:
@@ -49,6 +48,29 @@ def insert(tab_name, used_time, browser):
             dbcursor.close()
             conn.close()
             print("MySQL connection is closed")
+
+def insert_manual_users(name,email,phone,password,serail_id,radio):
+    conn = get_connection()
+    dbcursor = conn.cursor()
+    records_query = records_query = "(SELECT email FROM user_info_manual WHERE email=%s) UNION (SELECT email FROM user_info_google WHERE email=%s);"
+    dbcursor.execute(records_query, (email,email))
+    records = dbcursor.fetchone()    
+    
+    if not records:
+        query= "INSERT INTO user_info_manual (username, phnumber, email, password, radio_button, serial_id) values (%s, %s,%s, %s,%s, %s)"
+        dbcursor.execute(query,(name,phone,email,password,radio,serail_id))
+        print("signed up sucesffully")
+        print(f"insertec pswrd: {password}")
+        conn.commit()
+        conn.close()
+        return True
+    else:
+        print("user already exists")
+        conn.commit()
+        conn.close()
+        return False
+        #dailiuge box
+    
 
 def insert_user(name,email,serial_id):
     conn = get_connection()
@@ -88,6 +110,34 @@ def handle_google_login(email):
     conn.close()
     return False
 
+
+def handel_manual_login(email,password,serail_id):
+    conn = get_connection()
+    dbcursor = conn.cursor()
+    records_query = "SELECT * FROM user_info_manual WHERE email = %s AND password = %s"
+    dbcursor.execute(records_query, (email,password))
+    records = dbcursor.fetchone() 
+    
+    if records:
+        update_query = "UPDATE user_info_manual SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
+        dbcursor.execute(update_query,(email,serail_id))
+        conn.commit()
+        
+        update_query="UPDATE user_info_manual SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
+        dbcursor.execute(update_query,(email,serail_id))
+        conn.commit()
+        
+        query="SELECT username FROM user_info_manual WHERE email = %s AND password = %s"
+        dbcursor.execute(query,(email,password))
+        record = dbcursor.fetchone()
+        if record:
+            name= record[0] 
+            print(name)
+        return True,name
+    conn.close()
+    return False,None
+    
+    
 def get_login_status():
     conn=get_connection()
     dbcursor = conn.cursor()
@@ -95,18 +145,35 @@ def get_login_status():
     serial_id=get_serial_number()
     dbcursor.execute(records_query,(serial_id,))
     records = dbcursor.fetchone() 
-    conn.close()  
     if records:
+        conn.close()
         return True,records[2],records[1]
     else:
-        return False,None,None
+        records_query = "SELECT * FROM user_info_manual WHERE serial_id = %s AND logged_in_status = 1"
+        serial_id=get_serial_number()
+        dbcursor.execute(records_query,(serial_id,))
+        records = dbcursor.fetchone() 
+        if records:
+            conn.close()
+            
+            return True,records[1],records[3]
+        else:
+            conn.close()
+            return False,None,None
+    
     
 def logout_user(email):
     conn=get_connection()
     dbcursor = conn.cursor()
+  
     update_query = "UPDATE user_info_google SET logged_in_status = 0 WHERE email= %s"
     dbcursor.execute(update_query,(email,))
     conn.commit()
+
+    update_query = "UPDATE user_info_manual SET logged_in_status = 0 WHERE email= %s"
+    dbcursor.execute(update_query,(email,))
+    conn.commit()
+       
     conn.close()
     print(f"{email} logged out")
     

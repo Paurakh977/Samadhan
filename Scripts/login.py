@@ -3,9 +3,10 @@ from PyQt5 import QtWidgets
 from PyQt5.uic import loadUi
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from config import handle_google_login
+from config import handle_google_login,handel_manual_login
 from main_file import MyMainWindow
-
+from hash import check_password,hash_password
+from serial_id import get_serial_number
 class LoginWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -25,8 +26,25 @@ class LoginWindow(QtWidgets.QMainWindow):
         self.google_login_btn=self.findChild(QtWidgets.QPushButton,"google_btn")
         self.google_login_btn.clicked.connect(self.login_with_google)
         
+        self.login_btn.clicked.connect(self.login_manual_user)
         
-        
+    def login_manual_user(self):
+        email = self.email_line_edit.text()
+        password = self.pswrd_line_edit.text()
+        hashed_password = hash_password(password)
+        print(hashed_password)
+        if email and password:
+            serial_id = get_serial_number()
+            status, name = handel_manual_login(email, hashed_password, serial_id)
+            if status:
+                self.close()
+                self.main_window = MyMainWindow()
+                self.main_window.get_menu(name=name, email=email)
+            else:
+                print("invalid userid or paswrd")
+        else:
+            print("Email and password must be provided")
+            
     def login_with_google(self):
         creds_file = os.path.join(os.path.dirname(__file__),"API", 'credentials.json')
         scopes = ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid']
