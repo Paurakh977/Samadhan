@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 10, 2024 at 05:52 PM
+-- Generation Time: Jul 11, 2024 at 09:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -77,6 +77,32 @@ INSERT INTO `user_info_google` (`ID`, `email`, `username`, `password`, `logged_i
 (6, 'dollarchaeyo@gmail.com', 'Dollar Chaeyo', NULL, 0, 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
 (7, 'pandeypaurakhraj@gmail.com', 'Paurakh Raj Pandey', NULL, 0, 'f8a294e2-f241-4eca-a964-c0c88c21f3c2');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_info_manual`
+--
+
+CREATE TABLE `user_info_manual` (
+  `user_id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `phnumber` varchar(20) DEFAULT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(100) NOT NULL,
+  `radio_button` varchar(50) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `logged_in_status` tinyint(1) DEFAULT 0,
+  `serial_id` varchar(256) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_info_manual`
+--
+
+INSERT INTO `user_info_manual` (`user_id`, `username`, `phnumber`, `email`, `password`, `radio_button`, `created_at`, `logged_in_status`, `serial_id`) VALUES
+(16, 'admin dada', '9876543456', 'admin@gmail.com', '$2b$12$WMDnjnQGHfHlO7xVxtsUj.tNirNjwUqIH65NpQlQfG8Gdb1yX1V7y', 'For myself', '2024-07-11 18:21:21', 0, 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
+(17, 'dada', '9810172202', 'dada@gmail.com', '$2b$12$WMDnjnQGHfHlO7xVxtsUj.D6/9.tVkuiVzpezowiOkElQVOcHlXm.', 'For myself', '2024-07-11 18:46:46', 1, 'f8a294e2-f241-4eca-a964-c0c88c21f3c2');
+
 --
 -- Indexes for dumped tables
 --
@@ -94,6 +120,12 @@ ALTER TABLE `user_info_google`
   ADD PRIMARY KEY (`ID`);
 
 --
+-- Indexes for table `user_info_manual`
+--
+ALTER TABLE `user_info_manual`
+  ADD PRIMARY KEY (`user_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -108,6 +140,12 @@ ALTER TABLE `app_usage_info`
 --
 ALTER TABLE `user_info_google`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `user_info_manual`
+--
+ALTER TABLE `user_info_manual`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
