@@ -5,10 +5,10 @@ from serial_id import get_serial_number
 def get_connection():
     """Establish and return a new database connection."""
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="samadhandb"
+        host="sql12.freesqldatabase.com",
+        user="sql12719283",
+        password="DZ7mIqLCi7",
+        database="sql12719283"
     )
     
 conn = get_connection()
