@@ -25,11 +25,14 @@ class LoginWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("SAMADHAN")
         
         self.go_to_signup=self.findChild(QtWidgets.QPushButton,"signup_btn")
+        self.fb_btn=self.findChild(QtWidgets.QPushButton,"fb_btn")
         self.login_btn=self.findChild(QtWidgets.QAbstractButton,"login_btn")
         self.google_login_btn=self.findChild(QtWidgets.QPushButton,"google_btn")
-        self.google_login_btn.clicked.connect(self.login_with_google)
         
+        #connections
+        self.google_login_btn.clicked.connect(self.login_with_google)
         self.login_btn.clicked.connect(self.login_manual_user)
+        self.fb_btn.clicked.connect(lambda:show_message_box("Unable to Connect to Server!\nPlease Try Again Later","Server Error",QtWidgets.QMessageBox.Warning))
         
     def login_manual_user(self):
         email = self.email_line_edit.text()

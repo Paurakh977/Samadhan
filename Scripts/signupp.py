@@ -28,6 +28,7 @@ class SignupWindow(QtWidgets.QMainWindow):
         #finding child
         self.already_have_an_account=self.findChild(QtWidgets.QPushButton,"signup_btn")
         self.google_login_btn=self.findChild(QtWidgets.QPushButton,"google_btn")
+        self.fb_btn=self.findChild(QtWidgets.QPushButton,"fb_btn")
         
         self.name_line_edit=self.findChild(QtWidgets.QLineEdit,"name_line_edit")
         self.ph_nmbr_line_edit=self.findChild(QtWidgets.QLineEdit,"ph_nmbr_line_edit")
@@ -38,6 +39,7 @@ class SignupWindow(QtWidgets.QMainWindow):
         self.sign_in_btn.clicked.connect(self.signup_manual)
         
         self.google_login_btn.clicked.connect(self.signup_with_google)
+        self.fb_btn.clicked.connect(lambda:show_message_box("Unable to Connect to Server!\nPlease Try Again Later","Server Error",QtWidgets.QMessageBox.Warning))
      
     def signup_manual(self):
         name = self.name_line_edit.text()
