@@ -8,6 +8,7 @@ import main_file
 from serial_id import get_serial_number
 from hash import hash_password
 from config import insert_manual_users
+from msg_box import show_message_box
 class SignupWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -51,11 +52,11 @@ class SignupWindow(QtWidgets.QMainWindow):
                 break
         
         if name and ph_nmbr and email and password and radio:
-            print(radio)
             hashed_password = hash_password(password)
             serial_id = get_serial_number()
             response=insert_manual_users(name, email, ph_nmbr, hashed_password, serial_id, radio)
             if not response:
+                show_message_box("User with this Email already Exists\nPlease try Again with another email","User Already Exists",QtWidgets.QMessageBox.Information)
                 for line_edit in self.findChildren(QtWidgets.QLineEdit):
                     line_edit.clear()
             else:
@@ -64,7 +65,8 @@ class SignupWindow(QtWidgets.QMainWindow):
                 self.main_window.get_login_window()
 
         else:
-            print("Fill all fields")
+            show_message_box("Please Fill Every Feild to Proceed","Incomplete Form",QtWidgets.QMessageBox.Critical)
+            
     
     
     def signup_with_google(self):
@@ -86,7 +88,11 @@ class SignupWindow(QtWidgets.QMainWindow):
             name = profile.get('names', [{}])[0].get('displayName', 'N/A')
             email = profile.get('emailAddresses', [{}])[0].get('value', 'N/A')
             serial_id=get_serial_number()
-            insert_user(name, email,serial_id)
+            status=insert_user(name, email,serial_id)
+            if status:
+                show_message_box("Signed up successfully\nYou can Login Now","Signup Successful",QtWidgets.QMessageBox.NoIcon)
+            else:
+                show_message_box("There is already an account associated with the chosen google account\nPlease Try Again using another Google Account","User Already Exists",QtWidgets.QMessageBox.Information)
         except Exception as e:
             logging.error(f"Error retrieving profile information: {e}")
     

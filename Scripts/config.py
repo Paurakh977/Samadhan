@@ -59,17 +59,14 @@ def insert_manual_users(name,email,phone,password,serail_id,radio):
     if not records:
         query= "INSERT INTO user_info_manual (username, phnumber, email, password, radio_button, serial_id) values (%s, %s,%s, %s,%s, %s)"
         dbcursor.execute(query,(name,phone,email,password,radio,serail_id))
-        print("signed up sucesffully")
-        print(f"insertec pswrd: {password}")
         conn.commit()
         conn.close()
         return True
     else:
-        print("user already exists")
         conn.commit()
         conn.close()
         return False
-        #dailiuge box
+
     
 
 def insert_user(name,email,serial_id):
@@ -83,11 +80,14 @@ def insert_user(name,email,serial_id):
     if not records:
         query = "INSERT INTO user_info_google(username, email, serial_id) values (%s, %s, %s)"        
         dbcursor.execute(query,(name,email,serial_id))
-        print("Signed up successfully.")
+        conn.commit()
+        conn.close()
+        return True
     else:
-        print("There is already an account associated with the chosen google account.")
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+        return False
+    
 
 def handle_google_login(email):  
     conn = get_connection()
