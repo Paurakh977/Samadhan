@@ -24,7 +24,7 @@ class MyMainWindow(QtWidgets.QMainWindow):
                     
         #connections for login window
         self.login_window.go_to_signup.clicked.connect(self.get_signup_window)
-        self.login_window.login_btn.clicked.connect(self.get_menu)
+        
         
         #connections for signup class
         self.signup_window.already_have_an_account.clicked.connect(self.get_login_window)
