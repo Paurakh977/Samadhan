@@ -89,7 +89,7 @@ def insert_user(name,email,serial_id):
         return False
     
 
-def handle_google_login(email):  
+def handle_google_login(email,serial_id):  
     conn = get_connection()
     dbcursor = conn.cursor()
     records_query = "SELECT * FROM user_info_google  WHERE email= %s "
@@ -97,18 +97,48 @@ def handle_google_login(email):
     records = dbcursor.fetchone() 
        
     if records:
-        serial_id=get_serial_number()
-        
-        update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
-        dbcursor.execute(update_query,(email,serial_id))
-        conn.commit()
-        
-        update_query="UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
-        dbcursor.execute(update_query,(email,serial_id))
-        conn.commit()
-        return True
-    conn.close()
-    return False
+        records_query = "SELECT * FROM user_info_manual WHERE email = %s AND serial_id = %s"
+        dbcursor.execute(records_query, (email,serial_id))
+        results = dbcursor.fetchall() 
+        if results:
+            update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
+            dbcursor.execute(update_query,(email,serial_id))
+                    
+            update_query="UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
+            dbcursor.execute(update_query,(email,serial_id))
+            
+            query="SELECT username FROM user_info_google WHERE email = %s"
+            dbcursor.execute(query,(email,))
+            record = dbcursor.fetchone()
+            if record:
+                name= record[0] 
+                print(name)
+                return True,name
+        else: 
+            print("block 2")
+            query = "SELECT username FROM user_info_google WHERE email = %s "
+            dbcursor.execute(query, (email,))
+            record = dbcursor.fetchone()
+            
+            if record:
+                print("about 2 insert")
+                name=record[0]
+                insert_query = """INSERT INTO user_info_google(username, email, serial_id)  VALUES (%s, %s, %s)"""
+                dbcursor.execute(insert_query, (name, email, serial_id))
+                update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
+                dbcursor.execute(update_query,(email,serial_id))
+                update_query="UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
+                dbcursor.execute(update_query,(email,serial_id))
+                conn.commit()
+                conn.close()
+                return True,name
+    else:
+        print("We didn't find any account matching with the entered credentials.")
+        conn.close()
+        return False,None
+            
+    conn.commit()
+    conn.close()    
 
 
 def handel_manual_login(email,password,serail_id):
@@ -122,9 +152,9 @@ def handel_manual_login(email,password,serail_id):
         print(serail_id)
         records_query = "SELECT * FROM user_info_manual WHERE email = %s AND serial_id = %s"
         dbcursor.execute(records_query, (email,serail_id))
-        records = dbcursor.fetchall() 
+        results = dbcursor.fetchall() 
         
-        if records:
+        if results:
             print("block 1")
             update_query = "UPDATE user_info_manual SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
             dbcursor.execute(update_query,(email,serail_id))

@@ -54,6 +54,7 @@ class LoginWindow(QtWidgets.QMainWindow):
             show_message_box("Email and Password must be Provided","Incomplete Form",QtWidgets.QMessageBox.Critical)
             
     def login_with_google(self):
+        serial_id = get_serial_number()
         creds_file = os.path.join(os.path.dirname(__file__),"API", 'credentials.json')
         scopes = ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid']
 
@@ -70,7 +71,7 @@ class LoginWindow(QtWidgets.QMainWindow):
 
             name = profile.get('names', [{}])[0].get('displayName', 'N/A')
             email = profile.get('emailAddresses', [{}])[0].get('value', 'N/A')
-            status=handle_google_login(email)
+            status= handle_google_login(email,serial_id)
             if(status):
                 self.close()
                 self.main_window=MyMainWindow()
