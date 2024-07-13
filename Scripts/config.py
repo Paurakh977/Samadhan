@@ -89,56 +89,93 @@ def insert_user(name,email,serial_id):
         return False
     
 
-def handle_google_login(email,serial_id):  
+def handle_google_login(email, serial_id):
     conn = get_connection()
     dbcursor = conn.cursor()
-    records_query = "SELECT * FROM user_info_google  WHERE email= %s "
-    dbcursor.execute(records_query, (email,))
-    records = dbcursor.fetchone() 
-       
-    if records:
-        records_query = "SELECT * FROM user_info_manual WHERE email = %s AND serial_id = %s"
-        dbcursor.execute(records_query, (email,serial_id))
-        results = dbcursor.fetchall() 
-        if results:
-            update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
-            dbcursor.execute(update_query,(email,serial_id))
-                    
-            update_query="UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
-            dbcursor.execute(update_query,(email,serial_id))
-            
-            query="SELECT username FROM user_info_google WHERE email = %s"
-            dbcursor.execute(query,(email,))
-            record = dbcursor.fetchone()
-            if record:
-                name= record[0] 
-                print(name)
-                return True,name
-        else: 
-            print("block 2")
-            query = "SELECT username FROM user_info_google WHERE email = %s "
-            dbcursor.execute(query, (email,))
-            record = dbcursor.fetchone()
-            
-            if record:
-                print("about 2 insert")
-                name=record[0]
-                insert_query = """INSERT INTO user_info_google(username, email, serial_id)  VALUES (%s, %s, %s)"""
-                dbcursor.execute(insert_query, (name, email, serial_id))
-                update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
-                dbcursor.execute(update_query,(email,serial_id))
-                update_query="UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
-                dbcursor.execute(update_query,(email,serial_id))
+
+    try:
+        # Check if the user exists
+        records_query = "SELECT * FROM user_info_google WHERE email = %s"
+        dbcursor.execute(records_query, (email,))
+        records = dbcursor.fetchall()
+
+        if records:
+            # Check if the user has logged in with this serial ID before
+            records_query = "SELECT * FROM user_info_google WHERE email = %s AND serial_id = %s"
+            dbcursor.execute(records_query, (email, serial_id))
+            results = dbcursor.fetchall()
+
+            if results:
+                # This ID has already been registered through this device
+               
+                while dbcursor.nextset():
+                    pass
+
+                update_query_1 = "UPDATE user_info_google SET logged_in_status = 1 WHERE email = %s AND serial_id = %s"
+                dbcursor.execute(update_query_1, (email, serial_id))
                 conn.commit()
-                conn.close()
-                return True,name
-    else:
-        print("We didn't find any account matching with the entered credentials.")
+
+                update_query_2 = "UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
+                dbcursor.execute(update_query_2, (email, serial_id))
+                conn.commit()
+
+                query = "SELECT username FROM user_info_google WHERE email = %s"
+                dbcursor.execute(query, (email,))
+                record = dbcursor.fetchone()
+
+                # Ensure all results are fetched before returning
+                while dbcursor.nextset():
+                    pass
+
+                if record:
+                    name = record[0]
+                    return True, name
+
+            else:
+                # Block 2 is assumed to be working correctly
+                query = "SELECT username FROM user_info_google WHERE email = %s"
+                dbcursor.execute(query, (email,))
+                record = dbcursor.fetchone()
+
+                if record:
+                    name = record[0]
+                    # Ensure all results are fetched before continuing
+                    while dbcursor.nextset():
+                        pass
+
+                    insert_query = "INSERT INTO user_info_google(username, email, serial_id) values (%s, %s, %s)"
+                    dbcursor.execute(insert_query, (name, email, serial_id))
+                    conn.commit()
+
+                    update_query = "UPDATE user_info_google SET logged_in_status = 1 WHERE email = %s AND serial_id = %s"
+                    dbcursor.execute(update_query, (email, serial_id))
+                    conn.commit()
+                    
+                    update_query = "UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
+                    dbcursor.execute(update_query, (email, serial_id))
+                    conn.commit()
+
+                    return True, name
+        else:
+            print("User does not exist")
+            return False, None
+
+    except mysql.connector.Error as err:
+        print(f"Database error: {err}")
+        conn.rollback()  # Rollback changes if any error occurs
+        return False, None
+
+    finally:
+        dbcursor.close()
         conn.close()
-        return False,None
-            
-    conn.commit()
-    conn.close()    
+
+    return False, None
+
+
+
+
+
+
 
 
 def handel_manual_login(email,password,serail_id):
@@ -149,13 +186,11 @@ def handel_manual_login(email,password,serail_id):
     records = dbcursor.fetchone() 
     
     if records:
-        print(serail_id)
         records_query = "SELECT * FROM user_info_manual WHERE email = %s AND serial_id = %s"
         dbcursor.execute(records_query, (email,serail_id))
         results = dbcursor.fetchall() 
         
         if results:
-            print("block 1")
             update_query = "UPDATE user_info_manual SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
             dbcursor.execute(update_query,(email,serail_id))
             
@@ -169,16 +204,13 @@ def handel_manual_login(email,password,serail_id):
             conn.close()
             if record:
                 name= record[0] 
-                print(name)
                 return True,name
         else:
-            print("block 2")
             query = "SELECT username, phnumber, radio_button FROM user_info_manual WHERE email = %s AND password = %s"
             dbcursor.execute(query, (email, password))
             record = dbcursor.fetchone()
             
             if record:
-                print("about 2 insert")
                 name,phone,radio=record
                 insert_query = """INSERT INTO user_info_manual (username, phnumber, email, password, radio_button, serial_id)  VALUES (%s, %s, %s, %s, %s, %s)"""
                 dbcursor.execute(insert_query, (name, phone, email, password, radio, serail_id))
