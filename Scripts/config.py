@@ -119,23 +119,48 @@ def handel_manual_login(email,password,serail_id):
     records = dbcursor.fetchone() 
     
     if records:
-        update_query = "UPDATE user_info_manual SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
-        dbcursor.execute(update_query,(email,serail_id))
-        conn.commit()
+        print(serail_id)
+        records_query = "SELECT * FROM user_info_manual WHERE email = %s AND serial_id = %s"
+        dbcursor.execute(records_query, (email,serail_id))
+        records = dbcursor.fetchone() 
         
-        update_query="UPDATE user_info_manual SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
-        dbcursor.execute(update_query,(email,serail_id))
-        conn.commit()
-        
-        query="SELECT username FROM user_info_manual WHERE email = %s AND password = %s"
-        dbcursor.execute(query,(email,password))
-        record = dbcursor.fetchone()
-        if record:
-            name= record[0] 
-            print(name)
-        return True,name
-    conn.close()
-    return False,None
+        if records:
+            print("block 1")
+            update_query = "UPDATE user_info_manual SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
+            dbcursor.execute(update_query,(email,serail_id))
+            
+            update_query="UPDATE user_info_manual SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
+            dbcursor.execute(update_query,(email,serail_id))
+            
+            query="SELECT username FROM user_info_manual WHERE email = %s AND password = %s"
+            dbcursor.execute(query,(email,password))
+            record = dbcursor.fetchone()
+            conn.commit()
+            conn.close()
+            if record:
+                name= record[0] 
+                print(name)
+                return True,name
+        else:
+            print("block 2")
+            query = "SELECT username, phnumber, radio_button FROM user_info_manual WHERE email = %s AND password = %s"
+            dbcursor.execute(query, (email, password))
+            record = dbcursor.fetchone()
+            
+            if record:
+                print("about 2 insert")
+                name,phone,radio=record
+                insert_query = """INSERT INTO user_info_manual (username, phnumber, email, password, radio_button, serial_id)  VALUES (%s, %s, %s, %s, %s, %s)"""
+                dbcursor.execute(insert_query, (name, phone, email, password, radio, serail_id))
+                conn.commit()
+                conn.close()
+                return True,name
+
+    else:
+        print("here is err?")
+        conn.close()
+        return False,None
+          
     
     
 def get_login_status():
