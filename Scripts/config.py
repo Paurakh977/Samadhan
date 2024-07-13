@@ -113,7 +113,7 @@ def handle_google_login(email):
 
 def handel_manual_login(email,password,serail_id):
     conn = get_connection()
-    dbcursor = conn.cursor()
+    dbcursor = conn.cursor(buffered=True)
     records_query = "SELECT * FROM user_info_manual WHERE email = %s AND password = %s"
     dbcursor.execute(records_query, (email,password))
     records = dbcursor.fetchone() 
@@ -122,7 +122,7 @@ def handel_manual_login(email,password,serail_id):
         print(serail_id)
         records_query = "SELECT * FROM user_info_manual WHERE email = %s AND serial_id = %s"
         dbcursor.execute(records_query, (email,serail_id))
-        records = dbcursor.fetchone() 
+        records = dbcursor.fetchall() 
         
         if records:
             print("block 1")
@@ -152,12 +152,16 @@ def handel_manual_login(email,password,serail_id):
                 name,phone,radio=record
                 insert_query = """INSERT INTO user_info_manual (username, phnumber, email, password, radio_button, serial_id)  VALUES (%s, %s, %s, %s, %s, %s)"""
                 dbcursor.execute(insert_query, (name, phone, email, password, radio, serail_id))
+                update_query = "UPDATE user_info_manual SET logged_in_status = 1 WHERE email= %s AND serial_id = %s"
+                dbcursor.execute(update_query,(email,serail_id))
+                update_query="UPDATE user_info_manual SET logged_in_status = 0 WHERE email = %s AND serial_id != %s"
+                dbcursor.execute(update_query,(email,serail_id))
                 conn.commit()
                 conn.close()
                 return True,name
 
     else:
-        print("here is err?")
+        print("We didn't find any account matching with the entered credentials.")
         conn.close()
         return False,None
           
