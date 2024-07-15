@@ -82,6 +82,17 @@ class LoginWindow(QtWidgets.QMainWindow):
         except Exception as e:
             logging.error(f"Error retrieving profile information: {e}")
 
+    def google_login_credentials():
+        creds_file = os.path.join(os.path.dirname(__file__),"API", 'credentials.json')
+        scopes = ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid']
+        flow = InstalledAppFlow.from_client_secrets_file(creds_file, scopes)
+        creds = flow.run_local_server(port=0)
+        service = build('people', 'v1', credentials=creds)
+        profile = service.people().get(resourceName='people/me', personFields='names,emailAddresses').execute()
+        name = profile.get('names', [{}])[0].get('displayName', 'N/A')
+        email = profile.get('emailAddresses', [{}])[0].get('value', 'N/A')
+        return name,email
+        
 def main():
     app=QtWidgets.QApplication(sys.argv)
     win=LoginWindow()

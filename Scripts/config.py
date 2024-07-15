@@ -5,36 +5,36 @@ from serial_id import get_serial_number
 def get_connection():
     """Establish and return a new database connection."""
     return mysql.connector.connect(
-        host="sql12.freesqldatabase.com",
-        user="sql12719283",
-        password="DZ7mIqLCi7",
-        database="sql12719283"
+        host="localhost",
+        user="root",
+        password="",
+        database="samadhandb"
     )
     
 
 
-def insert(tab_name, used_time, browser):
+def insert(tab_name, used_time, user_email):
     try:
         conn = get_connection()
         dbcursor = conn.cursor()
         now = datetime.datetime.now()
         present_date = datetime.date.today()
         present_day = now.strftime("%A")        
-        dbcursor.execute("SELECT * FROM app_usage_info WHERE tab_name=%s AND used_day=%s", (tab_name,present_day))
+        dbcursor.execute("SELECT * FROM app_usage_info WHERE tab_name=%s AND used_day=%s AND user_email=%s", (tab_name,present_day, user_email))
         row = dbcursor.fetchone()
         
         if row : 
             if row[5] == present_date:
-                used_time = row[1] + 1  
-                dbcursor.execute("UPDATE app_usage_info SET used_time=%s WHERE tab_name=%s AND used_day=%s", (used_time, tab_name, present_day))
+                used_time = row[1] + 3  
+                dbcursor.execute("UPDATE app_usage_info SET used_time=%s WHERE tab_name=%s AND used_day=%s AND user_email= %s", (used_time, tab_name, present_day,user_email))
                 print("data updated")
             else: 
-                delete_query = "DELETE FROM app_usage_info WHERE used_day =%s"
-                dbcursor.execute(delete_query,(present_day,))
+                delete_query = "DELETE FROM app_usage_info WHERE used_day =%s AND user_email =%s"
+                dbcursor.execute(delete_query,(present_day,user_email))
                 print("Deleted succesfully")
         else:
-            insert_query = "INSERT INTO app_usage_info (tab_name, used_time, browser,used_day,used_date) VALUES (%s, %s, %s,%s,%s)"
-            values = (tab_name, used_time, browser,present_day,present_date)
+            insert_query = "INSERT INTO app_usage_info (tab_name, used_time, user_email,used_day,used_date) VALUES (%s, %s, %s,%s,%s)"
+            values = (tab_name, used_time, user_email,present_day,present_date)
             dbcursor.execute(insert_query, values)
             print("New Data Inserted")
 
@@ -48,6 +48,7 @@ def insert(tab_name, used_time, browser):
             dbcursor.close()
             conn.close()
             print("MySQL connection is closed")
+
 
 def insert_manual_users(name,email,phone,password,serail_id,radio):
     conn = get_connection()
