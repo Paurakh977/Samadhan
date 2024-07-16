@@ -11,8 +11,6 @@ def get_connection():
         database="samadhandb"
     )
     
-
-
 def insert(tab_name, used_time, user_email):
     try:
         conn = get_connection()

@@ -2,7 +2,7 @@ import time
 import pygetwindow as gw
 import config
 from pywinauto import Application
-from login import LoginWindow
+import session
 
 tlds = [
   # Generic Top-Level Domains (gTLDs)
@@ -107,41 +107,41 @@ def get_fire_fox():
         except Exception as nested_e:
             print(f"Error in Firefox module: {nested_e}")
             return None      
-tab_name = "" 
-used_time = 0
-browser = ""
-log = LoginWindow()
-user_email = log.google_login_credentials()[1]
 
-while True:
-    title=None
-    active_window = gw.getActiveWindow()
-    
-    if active_window is not None:
-        if "Google Chrome" in active_window.title:
-            browser = "Google Chrome"
-            title=google_chr()
-            used_time +=1
-            time.sleep(3)
-        elif "Microsoft​ Edge" in active_window.title:
-            browser = "Microsoft Edge"
-            title=get_edge_url()
-            used_time +=1
-            time.sleep(3)
+
+def main():
+    if session.session_started: 
+        used_time = 0
+        user_email = session.session_email
+        while True:
+            title=None
+            active_window = gw.getActiveWindow()
             
-        elif "Mozilla Firefox" in active_window.title:
-            browser = "Mozilla Firefox"
-            title= get_fire_fox()
-            used_time +=1
-            time.sleep(3)
-            
-        else:
-            print("no browser active rn")
-            time.sleep(3)
-            
-    if title :
-        db = config
-        db.insert(title,used_time,user_email)
-        print(title)
+            if active_window is not None:
+                if "Google Chrome" in active_window.title:
+                    
+                    title=google_chr()
+                    used_time +=1
+                    time.sleep(3)
+                elif "Microsoft​ Edge" in active_window.title:
+                    
+                    title=get_edge_url()
+                    used_time +=1
+                    time.sleep(3)
+                    
+                elif "Mozilla Firefox" in active_window.title:
+                    
+                    title= get_fire_fox()
+                    used_time +=1
+                    time.sleep(3)
+                    
+                else:
+                    print("no browser active rn")
+                    time.sleep(3)
+                    
+            if title :
+                db = config
+                db.insert(title,used_time,user_email)
+                print(title)
     
         
