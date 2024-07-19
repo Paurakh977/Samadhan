@@ -7,9 +7,9 @@ class CircularProgress(QWidget):
         QWidget.__init__(self)
         # CUSTOM PROPERTIES
         self.value = 0
-        self.width = 200
-        self.height = 200
-        self.progress_width = 10
+        self.width = 500
+        self.height = 500
+        self.progress_width = 40
         self.progress_rounded_cap = True
         self.progress_color = 0x498BD1
         self.max_value = 100

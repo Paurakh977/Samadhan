@@ -20,9 +20,9 @@ class MainWindow(QMainWindow):
         self.progress.value = 50
         self.progress.suffix = "%"
         self.progress.font_size = 30
-        self.progress.width = 300  # Fixed typo: `self.progress.width - 300` to `self.progress.width = 300`
-        self.progress.height = 300
-        self.progress.progress_width = 30
+        self.progress.width = 500  # Fixed typo: `self.progress.width - 500` to `self.progress.width = 500`
+        self.progress.height = 500
+        self.progress.progress_width = 40
         self.progress.text_color = 0xFFFFFF
         self.progress.progress_color = 0x4285F4
         self.progress.progress_rounded_cap = True
