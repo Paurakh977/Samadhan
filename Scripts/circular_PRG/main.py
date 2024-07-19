@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from circular.circular_progress import CircularProgress
 
-class MainWindow(QMainWindow): 
+class MainWindow(QMainWindow):  
     def __init__(self):
         QMainWindow.__init__(self) 
         # RESIZE WINDOW 
@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
         
         # CREATE CIRCULAR PROGRESS 
         self.progress = CircularProgress()
-        self.progress.value = 50
+        self.progress.value = 0
         self.progress.suffix = "%"
         self.progress.font_size = 30        
         self.progress.width = 500  # Increased width
