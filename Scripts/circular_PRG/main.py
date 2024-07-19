@@ -21,11 +21,10 @@ class MainWindow(QMainWindow):
         self.progress.value = 50
         self.progress.suffix = "%"
         self.progress.font_size = 30        
-        self.progress.width = 400  # Increased width
-        self.progress.height = 400  # Increased height
-        self.progress.progress_width = 30  # Increased width for thicker bar
-        self.progress.text_color = 0x000000  # Black text color
-        self.progress.progress_color = 0x4285F4  # Blue color similar to the image
+        self.progress.width = 500  # Increased width
+        self.progress.height = 500  # Increased height
+        self.progress.progress_width = 40  # Increased width for thicker bar
+        self.progress.progress_color =  QColor(22, 109, 245)  # Blue color similar to the image
         self.progress.progress_rounded_cap = True  # Rounded cap for smooth edges
         self.progress.setMinimumSize(self.progress.width, self.progress.height)
         

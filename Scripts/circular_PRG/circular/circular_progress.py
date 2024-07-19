@@ -7,16 +7,16 @@ class CircularProgress(QWidget):
         QWidget.__init__(self)
         # CUSTOM PROPERTIES
         self.value = 0
-        self.width = 400  # Increased width for larger radius
-        self.height = 400  # Increased height for larger radius
-        self.progress_width = 30  # Increased width for thicker bar
+        self.width = 500  # Increased width for larger radius
+        self.height = 500  # Increased height for larger radius
+        self.progress_width = 40  # Increased width for thicker bar
         self.progress_rounded_cap = True  # Set round cap for the progress bar
-        self.progress_color = 0x4285F4  # Blue color similar to the image
+        self.progress_color =  QColor(22, 109, 245)  # Blue color similar to the image
         self.max_value = 100
         self.font_family = "Segoe UI"
         self.font_size = 12
         self.suffix = "%"
-        self.text_color = 0x000000  # Black text color
+        self.text_color = 0xFFFFFF  # White text color for percentage
         # SET DEFAULT SIZE WITHOUT LAYOUT
         self.resize(self.width, self.height)
         
@@ -50,7 +50,8 @@ class CircularProgress(QWidget):
         paint = QPainter()
         paint.begin(self)
         paint.setRenderHint(QPainter.Antialiasing)  # remove pixelated edges
-        paint.setFont(QFont(self.font_family, self.font_size))  # remove pixelated edges
+        font = QFont(self.font_family, self.font_size, QFont.Bold)  # Set font to bold
+        paint.setFont(font)
 
         # CREATE RECTANGLE
         rect = QRect(0, 0, size, size)
@@ -69,15 +70,16 @@ class CircularProgress(QWidget):
         paint.setPen(pen)
         paint.drawArc(margin, margin, width, height, -90 * 16, -value * 16)
 
-        # CREATE TEXT
-        pen.setColor(QColor(self.text_color))
-        paint.setPen(pen)
-        paint.drawText(rect, Qt.AlignCenter, f"{self.value} {self.suffix}")
-
         # Draw the image in the center
         image_size = min(width, height) - self.progress_width * 2
         image_rect = QRect(margin + (width - image_size) // 2, margin + (height - image_size) // 2, image_size, image_size)
         paint.drawImage(image_rect, self.image)
+
+        # CREATE TEXT
+        pen.setColor(QColor(self.text_color))
+        paint.setPen(pen)
+        text_rect = QRect(margin, margin, width, height)
+        paint.drawText(text_rect, Qt.AlignCenter | Qt.AlignTop, f"{self.value} {self.suffix}")
 
         # END
         paint.end()
