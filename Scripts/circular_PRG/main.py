@@ -1,40 +1,41 @@
-import sys
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+import sys 
+import os
+from PyQt5.QtCore import * 
+from PyQt5.QtGui import * 
 from PyQt5.QtWidgets import *
 from circular.circular_progress import CircularProgress
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow): 
     def __init__(self):
-        QMainWindow.__init__(self)
-        # RESIZE WINDOW
-        self.resize(500, 500)
+        QMainWindow.__init__(self) 
+        # RESIZE WINDOW 
+        self.resize(600, 600)
        
         # CREATE CONTAINER AND LAYOUT
         self.container = QFrame()
         self.container.setStyleSheet("background-color: transparent")
         self.layout = QVBoxLayout()
         
-        # CREATE CIRCULAR PROGRESS
+        # CREATE CIRCULAR PROGRESS 
         self.progress = CircularProgress()
         self.progress.value = 50
         self.progress.suffix = "%"
-        self.progress.font_size = 30
-        self.progress.width = 500  # Fixed typo: `self.progress.width - 500` to `self.progress.width = 500`
-        self.progress.height = 500
-        self.progress.progress_width = 40
-        self.progress.text_color = 0xFFFFFF
-        self.progress.progress_color = 0x4285F4
-        self.progress.progress_rounded_cap = True
+        self.progress.font_size = 30        
+        self.progress.width = 400  # Increased width
+        self.progress.height = 400  # Increased height
+        self.progress.progress_width = 30  # Increased width for thicker bar
+        self.progress.text_color = 0x000000  # Black text color
+        self.progress.progress_color = 0x4285F4  # Blue color similar to the image
+        self.progress.progress_rounded_cap = True  # Rounded cap for smooth edges
         self.progress.setMinimumSize(self.progress.width, self.progress.height)
         
         # ADD SLIDER
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = QSlider(Qt.Horizontal) 
         self.slider.setRange(0, 100)
         self.slider.valueChanged.connect(self.change_value)
         
         # ADD WIDGETS
-        self.layout.addWidget(self.progress, Qt.AlignCenter, Qt.AlignCenter)
+        self.layout.addWidget(self.progress, Qt.AlignCenter, Qt.AlignCenter) 
         self.layout.addWidget(self.slider, Qt.AlignCenter, Qt.AlignCenter)
         
         # SET CENTRAL WIDGET
@@ -48,12 +49,11 @@ class MainWindow(QMainWindow):
         # SHOW WINDOW
         self.show()
         
-    # CHANGE VALUE
+    # CHANGE VALUE 
     def change_value(self, value):
         self.progress.set_value(value)
 
-
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = QApplication(sys.argv) 
     window = MainWindow()
     sys.exit(app.exec_())

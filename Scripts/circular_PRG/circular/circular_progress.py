@@ -7,19 +7,22 @@ class CircularProgress(QWidget):
         QWidget.__init__(self)
         # CUSTOM PROPERTIES
         self.value = 0
-        self.width = 500
-        self.height = 500
-        self.progress_width = 40
-        self.progress_rounded_cap = True
-        self.progress_color = 0x498BD1
+        self.width = 400  # Increased width for larger radius
+        self.height = 400  # Increased height for larger radius
+        self.progress_width = 30  # Increased width for thicker bar
+        self.progress_rounded_cap = True  # Set round cap for the progress bar
+        self.progress_color = 0x4285F4  # Blue color similar to the image
         self.max_value = 100
         self.font_family = "Segoe UI"
         self.font_size = 12
         self.suffix = "%"
-        self.text_color = 0x498BD1
+        self.text_color = 0x000000  # Black text color
         # SET DEFAULT SIZE WITHOUT LAYOUT
         self.resize(self.width, self.height)
-    
+        
+        # Load the image
+        self.image = QImage(r'C:\Users\pande\OneDrive\Desktop\PyQt\Samadhan-App\Images\24-hours (1).png')  # Adjust path accordingly
+
     # ADD DROPSHADOW
     def add_shadow(self, enable):
         if enable:
@@ -70,6 +73,11 @@ class CircularProgress(QWidget):
         pen.setColor(QColor(self.text_color))
         paint.setPen(pen)
         paint.drawText(rect, Qt.AlignCenter, f"{self.value} {self.suffix}")
+
+        # Draw the image in the center
+        image_size = min(width, height) - self.progress_width * 2
+        image_rect = QRect(margin + (width - image_size) // 2, margin + (height - image_size) // 2, image_size, image_size)
+        paint.drawImage(image_rect, self.image)
 
         # END
         paint.end()
