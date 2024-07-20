@@ -18,17 +18,17 @@ class CircularProgress(QWidget):
         self.font_family = "Segoe UI"
         self.font_size = 12
         self.suffix = "%"
-        self.text_color = 0x000000  # White text color
+        self.text_color = QColor(0, 0, 0)  # Black text color
         self.resize(self.width, self.height)
 
         this_file_location = os.path.dirname(__file__)
-        center_image = os.path.abspath(os.path.join(this_file_location,'..','Images','bg.png'))
-        start_image = os.path.abspath(os.path.join(this_file_location,'..','Images','profile_white.png'))
-        end_image = os.path.abspath(os.path.join(this_file_location,'..','Images','time-left (1).png'))
+        center_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'bg.png'))
+        start_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'profile_white.png'))
+        end_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'time-left (1).png'))
         self.center_image = QImage(center_image)
         self.start_image = QImage(start_image)
         self.end_image = QImage(end_image)
-        
+
         self.start_image = self.start_image.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.end_image = self.end_image.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
@@ -76,11 +76,13 @@ class CircularProgress(QWidget):
         paint.setPen(pen)
         paint.drawArc(margin, margin, width, height, -90 * 16, -value * 16)
 
-        image_size = min(width, height) - self.progress_width * 2
-        image_rect = QRect(margin + (width - image_size) // 2, margin + (height - image_size) // 2, image_size, image_size)
-        paint.drawImage(image_rect, self.center_image)
+        # Enlarge the center image to fill the inner part
+        image_size = size - self.progress_width*2
+        scaled_center_image = self.center_image.scaled(image_size, image_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        image_rect = QRect(margin + self.progress_width // 2, margin + self.progress_width // 2, image_size, image_size)
+        paint.drawImage(image_rect, scaled_center_image)
 
-        pen.setColor(QColor(self.text_color))
+        pen.setColor(self.text_color)
         paint.setPen(pen)
         text_rect = QRect(margin, margin, width, height)
         paint.drawText(text_rect, Qt.AlignCenter, f"{self.value} {self.suffix}")
@@ -96,7 +98,3 @@ class CircularProgress(QWidget):
         paint.drawImage(QRect(end_x, end_y, self.end_image.width(), self.end_image.height()), self.end_image)
 
         paint.end()
-
-
-
-
