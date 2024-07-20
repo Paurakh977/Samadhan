@@ -3,7 +3,7 @@ import os
 from PyQt5.QtCore import * 
 from PyQt5.QtGui import * 
 from PyQt5.QtWidgets import *
-from circular.circular_progress import CircularProgress
+from circular_progress import CircularProgress
 
 class MainWindow(QMainWindow):  
     def __init__(self):

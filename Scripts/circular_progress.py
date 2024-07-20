@@ -2,6 +2,7 @@ from math import cos, sin, radians
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+import os
 
 class CircularProgress(QWidget):
     def __init__(self):
@@ -16,13 +17,17 @@ class CircularProgress(QWidget):
         self.font_family = "Segoe UI"
         self.font_size = 12
         self.suffix = "%"
-        self.text_color = 0xFFFFFF
+        self.text_color = 0x000000
         self.resize(self.width, self.height)
 
         # Load and scale the images
-        self.center_image = QImage(r"C:\Users\pande\OneDrive\Desktop\PyQt\Samadhan-App\Images\24-hours (1).png")
-        self.start_image = QImage(r'C:\Users\pande\OneDrive\Desktop\PyQt\Samadhan-App\Images\profile_white.png')
-        self.end_image = QImage(r"C:\Users\pande\OneDrive\Desktop\PyQt\Samadhan-App\Images\time-left (1).png")
+        this_file_location = os.path.dirname(__file__)
+        center_image = os.path.abspath(os.path.join(this_file_location,'..','Images','bg.png'))
+        start_image = os.path.abspath(os.path.join(this_file_location,'..','Images','profile_white.png'))
+        end_image = os.path.abspath(os.path.join(this_file_location,'..','Images','time-left (1).png'))
+        self.center_image = QImage(center_image)
+        self.start_image = QImage(start_image)
+        self.end_image = QImage(end_image)
         
         # Scale the images to fit the progress bar
         self.start_image = self.start_image.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
