@@ -5,21 +5,35 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+def get_angle(hour, minute=0):
+    """
+    Converts a given hour (and optional minute) into the corresponding angle for the progress bar.
+
+    Args:
+        hour (int): The hour on the clock (0-11).
+        minute (int, optional): The minutes past the hour (0-59). Defaults to 0.
+
+    Returns:
+        float: The angle in degrees.
+    """
+    hour = hour % 12
+    angle_deg = (hour * 30) + (minute * 0.5)
+    return angle_deg - 90
+
 class CircularProgress(QWidget):
-    def __init__(self):
+    def __init__(self, start_angle, end_angle):
         super().__init__()
-        self.value = 0
+        self.start_angle = start_angle
+        self.end_angle = end_angle
         self.width = 400
         self.height = 400
         self.progress_width = 30
         self.progress_rounded_cap = True
         self.progress_color = QColor(22, 109, 245)
-        self.background_color = QColor(220, 220, 220)  # Color for the uncompleted part
-        self.max_value = 100
+        self.background_color = QColor(220, 220, 220)
         self.font_family = "Segoe UI"
         self.font_size = 12
-        self.suffix = "%"
-        self.text_color = QColor(0, 0, 0)  # Black text color
+        self.text_color = QColor(0, 0, 0)
         self.resize(self.width, self.height)
 
         this_file_location = os.path.dirname(__file__)
@@ -42,16 +56,16 @@ class CircularProgress(QWidget):
             self.shadow.setColor(QColor(0, 0, 0, 120))
             self.setGraphicsEffect(self.shadow)
 
-    def set_value(self, value):
-        self.value = value
-        self.repaint()
-
     def paintEvent(self, e):
         size = min(self.width, self.height)
         width = int(size - self.progress_width)
         height = int(size - self.progress_width)
         margin = int(self.progress_width / 2)
-        value = int(self.value * 360 / self.max_value)
+
+        # Calculate the arc length between the start and end angles
+        angle_length = self.end_angle - self.start_angle
+        if angle_length < 0:
+            angle_length += 360
 
         paint = QPainter()
         paint.begin(self)
@@ -75,25 +89,22 @@ class CircularProgress(QWidget):
         # Draw the progress bar (completed part)
         pen.setColor(self.progress_color)
         paint.setPen(pen)
-        paint.drawArc(margin, margin, width, height, -90 * 16, -value * 16)
+        paint.drawArc(margin, margin, width, height, int(self.start_angle * 16), - int(angle_length * 16))
 
-        # Enlarge the center image to fill the inner part
-        image_size = size - self.progress_width*2
+        # Draw the center image
+        image_size = size - self.progress_width * 2
         scaled_center_image = self.center_image.scaled(image_size, image_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         image_rect = QRect(margin + self.progress_width // 2, margin + self.progress_width // 2, image_size, image_size)
         paint.drawImage(image_rect, scaled_center_image)
 
-        pen.setColor(self.text_color)
-        paint.setPen(pen)
-        text_rect = QRect(margin, margin, width, height)
-        paint.drawText(text_rect, Qt.AlignCenter, f"{self.value} {self.suffix}")
-
-        start_angle_rad = radians(90)
+        # Draw start image
+        start_angle_rad = radians(self.start_angle)
         start_x = int(size / 2 + (width / 2) * cos(start_angle_rad) - self.start_image.width() / 2)
         start_y = int(size / 2 + (height / 2) * sin(start_angle_rad) - self.start_image.height() / 2)
         paint.drawImage(QRect(start_x, start_y, self.start_image.width(), self.start_image.height()), self.start_image)
 
-        end_angle_rad = radians(90 + (self.value * 360 / self.max_value))
+        # Draw end image
+        end_angle_rad = radians(self.end_angle)
         end_x = int(size / 2 + (width / 2) * cos(end_angle_rad) - self.end_image.width() / 2)
         end_y = int(size / 2 + (height / 2) * sin(end_angle_rad) - self.end_image.height() / 2)
         paint.drawImage(QRect(end_x, end_y, self.end_image.width(), self.end_image.height()), self.end_image)
@@ -101,7 +112,7 @@ class CircularProgress(QWidget):
         paint.end()
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, start_angle, end_angle):
         super().__init__()
         self.resize(600, 600)
 
@@ -109,8 +120,7 @@ class MainWindow(QMainWindow):
         self.container.setStyleSheet("background-color: white")
         self.layout = QVBoxLayout()
 
-        self.progress = CircularProgress()
-        self.progress.value = 0
+        self.progress = CircularProgress(start_angle, end_angle)
         self.progress.suffix = "%"
         self.progress.font_size = 30
         self.progress.width = 500
@@ -120,12 +130,7 @@ class MainWindow(QMainWindow):
         self.progress.progress_rounded_cap = True
         self.progress.setMinimumSize(self.progress.width, self.progress.height)
 
-        self.slider = QSlider(Qt.Horizontal)
-        self.slider.setRange(0, 100)
-        self.slider.valueChanged.connect(self.change_value)
-
         self.layout.addWidget(self.progress, Qt.AlignCenter, Qt.AlignCenter)
-        self.layout.addWidget(self.slider, Qt.AlignCenter, Qt.AlignCenter)
 
         self.container.setLayout(self.layout)
         self.setCentralWidget(self.container)
@@ -135,10 +140,12 @@ class MainWindow(QMainWindow):
 
         self.show()
 
-    def change_value(self, value):
-        self.progress.set_value(value)
-
 if __name__ == "__main__":
+    start_hour = int(input("Enter the start hour for the progress bar (0-11): "))
+    end_hour = int(input("Enter the end hour for the progress bar (0-11): "))
+    start_angle = get_angle(start_hour)
+    end_angle = get_angle(end_hour)
+
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = MainWindow(start_angle, end_angle)
     sys.exit(app.exec_())
