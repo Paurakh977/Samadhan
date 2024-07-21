@@ -20,8 +20,57 @@ def get_angle(hour, minute=0):
     angle_deg = (hour * 30) + (minute * 0.5)
     return angle_deg - 90
 
+def convert_to_24_hour(hour, period):
+    """
+    Converts a 12-hour time format to 24-hour format.
+
+    Args:
+        hour (int): The hour in 12-hour format.
+        period (str): 'AM' or 'PM'.
+
+    Returns:
+        int: The hour in 24-hour format.
+    """
+    if period == 'AM':
+        return hour if hour != 12 else 0
+    else:
+        return hour if hour == 12 else hour + 12
+
+def calculate_time_difference(start_hour, start_minute, start_period, end_hour, end_minute, end_period):
+    """
+    Calculates the time difference between the start and end times, considering possible day rollover.
+
+    Args:
+        start_hour (int): The start hour (1-12).
+        start_minute (int): The start minute (0-59).
+        start_period (str): 'AM' or 'PM'.
+        end_hour (int): The end hour (1-12).
+        end_minute (int): The end minute (0-59).
+        end_period (str): 'AM' or 'PM'.
+
+    Returns:
+        tuple: The time difference in hours and minutes.
+    """
+    start_hour_24 = convert_to_24_hour(start_hour, start_period)
+    end_hour_24 = convert_to_24_hour(end_hour, end_period)
+    
+    start_total_minutes = start_hour_24 * 60 + start_minute
+    end_total_minutes = end_hour_24 * 60 + end_minute
+    
+    # Calculate the difference in minutes
+    diff_minutes = end_total_minutes - start_total_minutes
+    
+    # If the difference is negative, add a full day (1440 minutes)
+    if diff_minutes < 0:
+        diff_minutes += 24 * 60
+
+    # Convert minutes to hours and minutes
+    diff_hours = diff_minutes // 60
+    diff_remaining_minutes = diff_minutes % 60
+    return diff_hours, diff_remaining_minutes
+
 class CircularProgress(QWidget):
-    def __init__(self, start_angle, end_angle):
+    def __init__(self, start_angle, end_angle, time_difference):
         super().__init__()
         self.start_angle = start_angle
         self.end_angle = end_angle
@@ -35,6 +84,7 @@ class CircularProgress(QWidget):
         self.font_size = 12
         self.text_color = QColor(0, 0, 0)
         self.resize(self.width, self.height)
+        self.time_difference = time_difference
 
         this_file_location = os.path.dirname(__file__)
         center_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'bg.png'))
@@ -110,10 +160,27 @@ class CircularProgress(QWidget):
         end_y = int(size / 2 + (height / 2) * sin(end_angle_rad) - self.end_image.height() / 2)
         paint.drawImage(QRect(end_x, end_y, self.end_image.width(), self.end_image.height()), self.end_image)
 
+        # Draw the time difference text in the center
+        hours_text = f"{self.time_difference[0]}hr"
+        minutes_text = f"{self.time_difference[1]}min"
+        paint.setPen(self.text_color)
+
+        # Draw hours text
+        font.setPointSize(self.font_size + 10)
+        paint.setFont(font)
+        hours_rect = QRect(0, size // 2 - 30, size, 30)
+        paint.drawText(hours_rect, Qt.AlignCenter, hours_text)
+
+        # Draw minutes text
+        font.setPointSize(self.font_size)
+        paint.setFont(font)
+        minutes_rect = QRect(0, size // 2 + 15, size, 30)
+        paint.drawText(minutes_rect, Qt.AlignCenter, minutes_text)
+
         paint.end()
 
 class MainWindow(QMainWindow):
-    def __init__(self, start_angle, end_angle):
+    def __init__(self, start_angle, end_angle, time_difference):
         super().__init__()
         self.resize(600, 600)
 
@@ -121,7 +188,7 @@ class MainWindow(QMainWindow):
         self.container.setStyleSheet("background-color: white")
         self.layout = QVBoxLayout()
 
-        self.progress = CircularProgress(start_angle, end_angle)
+        self.progress = CircularProgress(start_angle, end_angle, time_difference)
         self.progress.suffix = "%"
         self.progress.font_size = 30
         self.progress.width = 500
@@ -142,11 +209,21 @@ class MainWindow(QMainWindow):
         self.show()
 
 if __name__ == "__main__":
-    start_hour = int(input("Enter the start hour for the progress bar (0-11): "))
-    end_hour = int(input("Enter the end hour for the progress bar (0-11): "))
-    start_angle = get_angle(start_hour)
-    end_angle = get_angle(end_hour)
+    start_hour = int(input("Enter the start hour (1-12): "))
+    start_minute = int(input("Enter the start minute (0-59): "))
+    start_period = input("Enter the start period (AM/PM): ").upper()
+
+    end_hour = int(input("Enter the end hour (1-12): "))
+    end_minute = int(input("Enter the end minute (0-59): "))
+    end_period = input("Enter the end period (AM/PM): ").upper()
+
+    # Calculate angles
+    start_angle = get_angle(start_hour, start_minute)
+    end_angle = get_angle(end_hour, end_minute)
+
+    # Calculate time difference
+    time_difference = calculate_time_difference(start_hour, start_minute, start_period, end_hour, end_minute, end_period)
 
     app = QApplication(sys.argv)
-    window = MainWindow(start_angle, end_angle)
+    window = MainWindow(start_angle, end_angle, time_difference)
     sys.exit(app.exec_())
