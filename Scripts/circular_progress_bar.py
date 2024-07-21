@@ -63,9 +63,10 @@ class CircularProgress(QWidget):
         margin = int(self.progress_width / 2)
 
         # Calculate the arc length between the start and end angles
-        angle_length = self.end_angle - self.start_angle
-        if angle_length < 0:
-            angle_length += 360
+        if self.end_angle < self.start_angle:
+            angle_length = 360 - (self.start_angle - self.end_angle)
+        else:
+            angle_length = self.end_angle - self.start_angle
 
         paint = QPainter()
         paint.begin(self)
@@ -89,7 +90,7 @@ class CircularProgress(QWidget):
         # Draw the progress bar (completed part)
         pen.setColor(self.progress_color)
         paint.setPen(pen)
-        paint.drawArc(margin, margin, width, height, int(self.start_angle * 16), - int(angle_length * 16))
+        paint.drawArc(margin, margin, width, height, -int(self.start_angle * 16), -int(angle_length * 16))
 
         # Draw the center image
         image_size = size - self.progress_width * 2
