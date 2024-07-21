@@ -6,65 +6,27 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 def get_angle(hour, minute=0):
-    """
-    Converts a given hour (and optional minute) into the corresponding angle for the progress bar.
-
-    Args:
-        hour (int): The hour on the clock (0-11).
-        minute (int, optional): The minutes past the hour (0-59). Defaults to 0.
-
-    Returns:
-        float: The angle in degrees.
-    """
     hour = hour % 12
     angle_deg = (hour * 30) + (minute * 0.5)
     return angle_deg - 90
 
 def convert_to_24_hour(hour, period):
-    """
-    Converts a 12-hour time format to 24-hour format.
-
-    Args:
-        hour (int): The hour in 12-hour format.
-        period (str): 'AM' or 'PM'.
-
-    Returns:
-        int: The hour in 24-hour format.
-    """
     if period == 'AM':
         return hour if hour != 12 else 0
     else:
         return hour if hour == 12 else hour + 12
 
 def calculate_time_difference(start_hour, start_minute, start_period, end_hour, end_minute, end_period):
-    """
-    Calculates the time difference between the start and end times, considering possible day rollover.
-
-    Args:
-        start_hour (int): The start hour (1-12).
-        start_minute (int): The start minute (0-59).
-        start_period (str): 'AM' or 'PM'.
-        end_hour (int): The end hour (1-12).
-        end_minute (int): The end minute (0-59).
-        end_period (str): 'AM' or 'PM'.
-
-    Returns:
-        tuple: The time difference in hours and minutes.
-    """
     start_hour_24 = convert_to_24_hour(start_hour, start_period)
     end_hour_24 = convert_to_24_hour(end_hour, end_period)
     
     start_total_minutes = start_hour_24 * 60 + start_minute
     end_total_minutes = end_hour_24 * 60 + end_minute
     
-    # Calculate the difference in minutes
     diff_minutes = end_total_minutes - start_total_minutes
-    
-    # If the difference is negative, add a full day (1440 minutes)
     if diff_minutes < 0:
         diff_minutes += 24 * 60
 
-    # Convert minutes to hours and minutes
     diff_hours = diff_minutes // 60
     diff_remaining_minutes = diff_minutes % 60
     return diff_hours, diff_remaining_minutes
@@ -81,15 +43,14 @@ class CircularProgress(QWidget):
         self.progress_color = QColor(22, 109, 245)
         self.background_color = QColor(220, 220, 220)
         self.font_family = "Segoe UI"
-        self.font_size = 12
         self.text_color = QColor(0, 0, 0)
         self.resize(self.width, self.height)
         self.time_difference = time_difference
 
         this_file_location = os.path.dirname(__file__)
         center_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'bg.png'))
-        start_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'profile_white.png'))
-        end_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'time-left (1).png'))
+        start_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'sun.png'))
+        end_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'night.png'))
         self.center_image = QImage(center_image)
         self.start_image = QImage(start_image)
         self.end_image = QImage(end_image)
@@ -112,7 +73,6 @@ class CircularProgress(QWidget):
         height = int(size - self.progress_width)
         margin = int(self.progress_width / 2)
 
-        # Calculate the arc length between the start and end angles
         if self.end_angle < self.start_angle:
             angle_length = 360 - (self.start_angle - self.end_angle)
         else:
@@ -121,14 +81,13 @@ class CircularProgress(QWidget):
         paint = QPainter()
         paint.begin(self)
         paint.setRenderHint(QPainter.Antialiasing)
-        font = QFont(self.font_family, self.font_size, QFont.Bold)
+        font = QFont("Open Sans", 12, QFont.Bold)
         paint.setFont(font)
 
         rect = QRect(0, 0, size, size)
         paint.setPen(Qt.NoPen)
         paint.drawRect(rect)
 
-        # Draw the background circle (uncompleted part)
         pen = QPen()
         pen.setColor(self.background_color)
         pen.setWidth(self.progress_width)
@@ -137,24 +96,20 @@ class CircularProgress(QWidget):
         paint.setPen(pen)
         paint.drawArc(margin, margin, width, height, 0, 360 * 16)
 
-        # Draw the progress bar (completed part)
         pen.setColor(self.progress_color)
         paint.setPen(pen)
         paint.drawArc(margin, margin, width, height, -int(self.start_angle * 16), -int(angle_length * 16))
 
-        # Draw the center image
         image_size = size - self.progress_width * 2
         scaled_center_image = self.center_image.scaled(image_size, image_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         image_rect = QRect(margin + self.progress_width // 2, margin + self.progress_width // 2, image_size, image_size)
         paint.drawImage(image_rect, scaled_center_image)
 
-        # Draw start image
         start_angle_rad = radians(self.start_angle)
         start_x = int(size / 2 + (width / 2) * cos(start_angle_rad) - self.start_image.width() / 2)
         start_y = int(size / 2 + (height / 2) * sin(start_angle_rad) - self.start_image.height() / 2)
         paint.drawImage(QRect(start_x, start_y, self.start_image.width(), self.start_image.height()), self.start_image)
 
-        # Draw end image
         end_angle_rad = radians(self.end_angle)
         end_x = int(size / 2 + (width / 2) * cos(end_angle_rad) - self.end_image.width() / 2)
         end_y = int(size / 2 + (height / 2) * sin(end_angle_rad) - self.end_image.height() / 2)
@@ -166,18 +121,22 @@ class CircularProgress(QWidget):
         paint.setPen(self.text_color)
 
         # Draw hours text
-        font.setPointSize(self.font_size + 10)
+        font.setPointSize(40)
+        font.setWeight(QFont.Bold)  # Set font weight to bold for hours
         paint.setFont(font)
-        hours_rect = QRect(0, size // 2 - 30, size, 30)
+        hours_rect = QRect(0, size // 2 - 70, size, 100)  # Adjust height to ensure full text is visible
         paint.drawText(hours_rect, Qt.AlignCenter, hours_text)
 
         # Draw minutes text
-        font.setPointSize(self.font_size)
+        font.setPointSize(20)
+        font.setWeight(QFont.Normal)  # Set font weight to normal for minutes
         paint.setFont(font)
-        minutes_rect = QRect(0, size // 2 + 15, size, 30)
+        minutes_rect = QRect(0, size // 2 + 10, size, 80)  # Adjust vertical position to ensure spacing
         paint.drawText(minutes_rect, Qt.AlignCenter, minutes_text)
 
         paint.end()
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self, start_angle, end_angle, time_difference):
@@ -193,7 +152,7 @@ class MainWindow(QMainWindow):
         self.progress.font_size = 30
         self.progress.width = 500
         self.progress.height = 500
-        self.progress.progress_width = 40
+        self.progress.progress_width = 50
         self.progress.progress_color = QColor(22, 109, 245)
         self.progress.progress_rounded_cap = True
         self.progress.setMinimumSize(self.progress.width, self.progress.height)
@@ -217,11 +176,9 @@ if __name__ == "__main__":
     end_minute = int(input("Enter the end minute (0-59): "))
     end_period = input("Enter the end period (AM/PM): ").upper()
 
-    # Calculate angles
     start_angle = get_angle(start_hour, start_minute)
-    end_angle = get_angle(end_hour, end_minute)
+    end_angle = get_angle(end_hour,end_minute)
 
-    # Calculate time difference
     time_difference = calculate_time_difference(start_hour, start_minute, start_period, end_hour, end_minute, end_period)
 
     app = QApplication(sys.argv)
