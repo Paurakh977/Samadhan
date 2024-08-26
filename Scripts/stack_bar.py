@@ -76,14 +76,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.central_widget = QtWidgets.QWidget()
         self.setCentralWidget(self.central_widget)
 
-        self.layout = QtWidgets.QVBoxLayout(self.central_widget)
+        self.central_layout = QtWidgets.QVBoxLayout(self.central_widget)
 
         self.graph = StackedBarGraph(self)
-        self.layout.addWidget(self.graph)
+        self.central_layout.addWidget(self.graph)
 
-        self.show()
+        
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
+    window.show()
     sys.exit(app.exec_())

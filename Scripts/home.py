@@ -1,7 +1,9 @@
-import sys
+import sys,os
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QFont
-
+from PyQt5.uic import loadUi
+from stack_bar import StackedBarGraph
+from circular_progress_bar import CircularProgress,get_angle,calculate_time_difference
 
 class HomeWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -9,34 +11,45 @@ class HomeWindow(QtWidgets.QMainWindow):
 
         self.setGeometry(800, 800, 500, 500)
         self.setWindowTitle("Home")
-        self.setup_UI()
 
-    def setup_UI(self):
-        self.centralwidget = QtWidgets.QWidget(self)
-        self.setCentralWidget(self.centralwidget)
-        self.central_layout = QtWidgets.QHBoxLayout(self.centralwidget)
-
-        self.frame_1 = QtWidgets.QFrame(self.centralwidget)
-        self.central_layout.addWidget(self.frame_1)
-
-        self.frame_1_layout = QtWidgets.QVBoxLayout(self.frame_1)
-
-        self.frame_1.setStyleSheet(
-            "QFrame { background-color: #e9f0ea; border: 4px solid #000; }"
+        this_file_location = os.path.dirname(__file__)
+        ui_file_location = os.path.abspath(
+            os.path.join(this_file_location, "..", "UI", "home.ui")
         )
+        loadUi(ui_file_location,self)
+        
+        #finding child
+        self.circular_bar_frame=self.findChild(QtWidgets.QFrame,"circular_bar_frame")
+        self.frame_3=self.findChild(QtWidgets.QFrame,"frame_3")
+        self.stack_bar_frame=self.findChild(QtWidgets.QFrame,"stack_bar_frame")
+        
+        #setting layouts for the frames
+        self.stack_bar_frame_layout=QtWidgets.QGridLayout(self.stack_bar_frame)
+        self.circular_bar_frame_layout=QtWidgets.QVBoxLayout(self.circular_bar_frame)
+        
+        # Adding the StackedBarGraph widget to the stack_bar_frame
+        self.stack_bar_graph = StackedBarGraph(self.stack_bar_frame)
+        self.stack_bar_frame_layout.addWidget(self.stack_bar_graph)
+        
+        #collecting params for iniitialzin ciruclar progressbar
+        start_hour = 6
+        start_minute = 47
+        start_period ="AM"
 
-        self.label1 = QtWidgets.QLabel(self.frame_1)
-        self.label1.setText("THIS IS HOME PAGE")
+        end_hour = 4
+        end_minute = 28
+        end_period = "PM"
+        start_angle = get_angle(start_hour, start_minute)
+        end_angle = get_angle(end_hour, end_minute)
 
-        font = QFont()
-        font.setPointSize(22)  # Set the point size before setting the font
-        self.label1.setFont(font)  # Apply the font with the specified point size
+        time_difference = calculate_time_difference(
+            start_hour, start_minute, start_period, end_hour, end_minute, end_period
+        )
+        #initialziin  circular progress bar
+        self.progress_bar = CircularProgress(start_angle, end_angle, time_difference)
+        self.circular_bar_frame_layout.addWidget(self.progress_bar,QtCore.Qt.AlignCenter,QtCore.Qt.AlignCenter)
 
-        self.label1.setAlignment(QtCore.Qt.AlignCenter)  # Align text to center
-
-        self.frame_1_layout.addWidget(self.label1)
-
-
+        
 def main():
     app = QtWidgets.QApplication(sys.argv)
     win = HomeWindow()

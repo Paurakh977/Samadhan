@@ -40,18 +40,26 @@ def calculate_time_difference(
 class CircularProgress(QWidget):
     def __init__(self, start_angle, end_angle, time_difference):
         super().__init__()
+        
+
         self.start_angle = start_angle
         self.end_angle = end_angle
-        self.width = 400
-        self.height = 400
-        self.progress_width = 30
         self.progress_rounded_cap = True
         self.progress_color = QColor(22, 109, 245)
         self.background_color = QColor(220, 220, 220)
         self.font_family = "Segoe UI"
         self.text_color = QColor(0, 0, 0)
-        self.resize(self.width, self.height)
         self.time_difference = time_difference
+        self.suffix = "%"
+        self.font_size = 30
+        self.width = 500
+        self.height = 500
+        self.progress_width = 50
+        self.progress_color = QColor(22, 109, 245)
+        self.progress_rounded_cap = True
+        self.setMinimumSize(self.width, self.height)
+        self.resize(self.width, self.height)
+        
 
         this_file_location = os.path.dirname(__file__)
         center_image = os.path.abspath(
@@ -196,38 +204,30 @@ class MainWindow(QMainWindow):
 
         self.container = QFrame()
         self.container.setStyleSheet("background-color: white")
+        # self.container.setMaximumSize(520,520)
         self.layout = QVBoxLayout()
 
         self.progress = CircularProgress(start_angle, end_angle, time_difference)
-        self.progress.suffix = "%"
-        self.progress.font_size = 30
-        self.progress.width = 500
-        self.progress.height = 500
-        self.progress.progress_width = 50
-        self.progress.progress_color = QColor(22, 109, 245)
-        self.progress.progress_rounded_cap = True
-        self.progress.setMinimumSize(self.progress.width, self.progress.height)
 
         self.layout.addWidget(self.progress, Qt.AlignCenter, Qt.AlignCenter)
 
         self.container.setLayout(self.layout)
         self.setCentralWidget(self.container)
 
-        self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        # self.setWindowFlags(Qt.FramelessWindowHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.show()
 
 
 if __name__ == "__main__":
-    start_hour = int(input("Enter the start hour (1-12): "))
-    start_minute = int(input("Enter the start minute (0-59): "))
-    start_period = input("Enter the start period (AM/PM): ").upper()
+    start_hour = 6
+    start_minute = 47
+    start_period ="AM"
 
-    end_hour = int(input("Enter the end hour (1-12): "))
-    end_minute = int(input("Enter the end minute (0-59): "))
-    end_period = input("Enter the end period (AM/PM): ").upper()
-
+    end_hour = 4
+    end_minute = 28
+    end_period = "PM"
     start_angle = get_angle(start_hour, start_minute)
     end_angle = get_angle(end_hour, end_minute)
 
