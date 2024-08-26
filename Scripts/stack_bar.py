@@ -62,7 +62,7 @@ class StackedBarGraph(QtWidgets.QWidget):
         ax.get_yaxis().set_visible(False)
 
         # Add legend outside the plot
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3, frameon=False)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.09), ncol=3, frameon=False)
 
         self.canvas.draw()
 

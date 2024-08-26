@@ -128,7 +128,7 @@ background-color:#ebf1f7;</string>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="strt_lbl">
             <property name="font">
              <font>
               <family>Arial Black</family>
@@ -215,7 +215,7 @@ background-color: #ebf1f7;
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="end_lbl">
             <property name="font">
              <font>
               <family>Arial Black</family>
