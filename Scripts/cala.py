@@ -1,26 +1,33 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QCalendarWidget, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QCalendarWidget,
+    QVBoxLayout,
+    QWidget,
+)
 from PyQt5.QtCore import Qt, QDate
 import sys
+
 
 class StyledCalendar(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
-        
+
     def initUI(self):
-        self.setWindowTitle('Styled Calendar')
+        self.setWindowTitle("Styled Calendar")
         self.setGeometry(100, 100, 400, 300)
 
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-        
+
         layout = QVBoxLayout(central_widget)
-        
+
         calendar = QCalendarWidget(self)
-        
+
         # Set the date to July 14, 2024
         calendar.setSelectedDate(QDate(2024, 7, 14))
-        
+
         # Custom Stylesheet
         calendar.setStyleSheet("""
             QCalendarWidget QWidget {
@@ -103,13 +110,14 @@ class StyledCalendar(QMainWindow):
                 color: red;
             }
         """)
-        
+
         layout.addWidget(calendar)
         central_widget.setLayout(layout)
-        
+
         self.show()
-        
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     ex = StyledCalendar()
     sys.exit(app.exec_())

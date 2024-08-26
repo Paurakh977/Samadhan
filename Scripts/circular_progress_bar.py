@@ -5,24 +5,29 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+
 def get_angle(hour, minute=0):
     hour = hour % 12
     angle_deg = (hour * 30) + (minute * 0.5)
     return angle_deg - 90
 
+
 def convert_to_24_hour(hour, period):
-    if period == 'AM':
+    if period == "AM":
         return hour if hour != 12 else 0
     else:
         return hour if hour == 12 else hour + 12
 
-def calculate_time_difference(start_hour, start_minute, start_period, end_hour, end_minute, end_period):
+
+def calculate_time_difference(
+    start_hour, start_minute, start_period, end_hour, end_minute, end_period
+):
     start_hour_24 = convert_to_24_hour(start_hour, start_period)
     end_hour_24 = convert_to_24_hour(end_hour, end_period)
-    
+
     start_total_minutes = start_hour_24 * 60 + start_minute
     end_total_minutes = end_hour_24 * 60 + end_minute
-    
+
     diff_minutes = end_total_minutes - start_total_minutes
     if diff_minutes < 0:
         diff_minutes += 24 * 60
@@ -30,6 +35,7 @@ def calculate_time_difference(start_hour, start_minute, start_period, end_hour, 
     diff_hours = diff_minutes // 60
     diff_remaining_minutes = diff_minutes % 60
     return diff_hours, diff_remaining_minutes
+
 
 class CircularProgress(QWidget):
     def __init__(self, start_angle, end_angle, time_difference):
@@ -48,15 +54,25 @@ class CircularProgress(QWidget):
         self.time_difference = time_difference
 
         this_file_location = os.path.dirname(__file__)
-        center_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'bg.png'))
-        start_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'sun.png'))
-        end_image = os.path.abspath(os.path.join(this_file_location, '..', 'Images', 'night.png'))
+        center_image = os.path.abspath(
+            os.path.join(this_file_location, "..", "Images", "bg.png")
+        )
+        start_image = os.path.abspath(
+            os.path.join(this_file_location, "..", "Images", "sun.png")
+        )
+        end_image = os.path.abspath(
+            os.path.join(this_file_location, "..", "Images", "night.png")
+        )
         self.center_image = QImage(center_image)
         self.start_image = QImage(start_image)
         self.end_image = QImage(end_image)
 
-        self.start_image = self.start_image.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.end_image = self.end_image.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.start_image = self.start_image.scaled(
+            30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        self.end_image = self.end_image.scaled(
+            30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
 
     def add_shadow(self, enable):
         if enable:
@@ -98,22 +114,54 @@ class CircularProgress(QWidget):
 
         pen.setColor(self.progress_color)
         paint.setPen(pen)
-        paint.drawArc(margin, margin, width, height, -int(self.start_angle * 16), -int(angle_length * 16))
+        paint.drawArc(
+            margin,
+            margin,
+            width,
+            height,
+            -int(self.start_angle * 16),
+            -int(angle_length * 16),
+        )
 
         image_size = size - self.progress_width * 2
-        scaled_center_image = self.center_image.scaled(image_size, image_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        image_rect = QRect(margin + self.progress_width // 2, margin + self.progress_width // 2, image_size, image_size)
+        scaled_center_image = self.center_image.scaled(
+            image_size, image_size, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        image_rect = QRect(
+            margin + self.progress_width // 2,
+            margin + self.progress_width // 2,
+            image_size,
+            image_size,
+        )
         paint.drawImage(image_rect, scaled_center_image)
 
         start_angle_rad = radians(self.start_angle)
-        start_x = int(size / 2 + (width / 2) * cos(start_angle_rad) - self.start_image.width() / 2)
-        start_y = int(size / 2 + (height / 2) * sin(start_angle_rad) - self.start_image.height() / 2)
-        paint.drawImage(QRect(start_x, start_y, self.start_image.width(), self.start_image.height()), self.start_image)
+        start_x = int(
+            size / 2 + (width / 2) * cos(start_angle_rad) - self.start_image.width() / 2
+        )
+        start_y = int(
+            size / 2
+            + (height / 2) * sin(start_angle_rad)
+            - self.start_image.height() / 2
+        )
+        paint.drawImage(
+            QRect(
+                start_x, start_y, self.start_image.width(), self.start_image.height()
+            ),
+            self.start_image,
+        )
 
         end_angle_rad = radians(self.end_angle)
-        end_x = int(size / 2 + (width / 2) * cos(end_angle_rad) - self.end_image.width() / 2)
-        end_y = int(size / 2 + (height / 2) * sin(end_angle_rad) - self.end_image.height() / 2)
-        paint.drawImage(QRect(end_x, end_y, self.end_image.width(), self.end_image.height()), self.end_image)
+        end_x = int(
+            size / 2 + (width / 2) * cos(end_angle_rad) - self.end_image.width() / 2
+        )
+        end_y = int(
+            size / 2 + (height / 2) * sin(end_angle_rad) - self.end_image.height() / 2
+        )
+        paint.drawImage(
+            QRect(end_x, end_y, self.end_image.width(), self.end_image.height()),
+            self.end_image,
+        )
 
         # Draw the time difference text in the center
         hours_text = f"{self.time_difference[0]}hr"
@@ -124,18 +172,21 @@ class CircularProgress(QWidget):
         font.setPointSize(40)
         font.setWeight(QFont.Bold)  # Set font weight to bold for hours
         paint.setFont(font)
-        hours_rect = QRect(0, size // 2 - 70, size, 100)  # Adjust height to ensure full text is visible
+        hours_rect = QRect(
+            0, size // 2 - 70, size, 100
+        )  # Adjust height to ensure full text is visible
         paint.drawText(hours_rect, Qt.AlignCenter, hours_text)
 
         # Draw minutes text
         font.setPointSize(20)
         font.setWeight(QFont.Normal)  # Set font weight to normal for minutes
         paint.setFont(font)
-        minutes_rect = QRect(0, size // 2 + 10, size, 80)  # Adjust vertical position to ensure spacing
+        minutes_rect = QRect(
+            0, size // 2 + 10, size, 80
+        )  # Adjust vertical position to ensure spacing
         paint.drawText(minutes_rect, Qt.AlignCenter, minutes_text)
 
         paint.end()
-
 
 
 class MainWindow(QMainWindow):
@@ -167,6 +218,7 @@ class MainWindow(QMainWindow):
 
         self.show()
 
+
 if __name__ == "__main__":
     start_hour = int(input("Enter the start hour (1-12): "))
     start_minute = int(input("Enter the start minute (0-59): "))
@@ -177,9 +229,11 @@ if __name__ == "__main__":
     end_period = input("Enter the end period (AM/PM): ").upper()
 
     start_angle = get_angle(start_hour, start_minute)
-    end_angle = get_angle(end_hour,end_minute)
+    end_angle = get_angle(end_hour, end_minute)
 
-    time_difference = calculate_time_difference(start_hour, start_minute, start_period, end_hour, end_minute, end_period)
+    time_difference = calculate_time_difference(
+        start_hour, start_minute, start_period, end_hour, end_minute, end_period
+    )
 
     app = QApplication(sys.argv)
     window = MainWindow(start_angle, end_angle, time_difference)
