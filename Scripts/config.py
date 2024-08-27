@@ -120,6 +120,8 @@ def handle_google_login(email, serial_id):
             query = "SELECT username FROM user_info_google WHERE email = %s"
             dbcursor.execute(query, (email,))
             record = dbcursor.fetchone()
+            conn.commit()
+            conn.close()
             if record:
                 name = record[0]
                 print(name)

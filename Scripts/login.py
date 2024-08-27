@@ -101,7 +101,7 @@ class LoginWindow(QtWidgets.QMainWindow):
                 session.session_started = True
                 session.session_username = name
                 session.session_email = email
-                browser_tracker.main()
+                # browser_tracker.main()
                 self.close()
                 self.main_window = MyMainWindow()
                 self.main_window.get_menu(name=name, email=email)
