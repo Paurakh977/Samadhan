@@ -11,7 +11,7 @@ def get_connection():
     )
 
 
-def insert(tab_name, used_time, user_email):
+def insert(tab_name, used_time, user_email, serial_id):
     try:
         conn = get_connection()
         dbcursor = conn.cursor()
@@ -19,8 +19,8 @@ def insert(tab_name, used_time, user_email):
         present_date = datetime.date.today()
         present_day = now.strftime("%A")
         dbcursor.execute(
-            "SELECT * FROM app_usage_info WHERE tab_name=%s AND used_day=%s AND user_email=%s",
-            (tab_name, present_day, user_email),
+            "SELECT * FROM app_usage_info WHERE tab_name=%s AND used_day=%s AND email=%s AND serial_id = %s",
+            (tab_name, present_day, user_email,serial_id),
         )
         row = dbcursor.fetchone()
 
@@ -28,22 +28,21 @@ def insert(tab_name, used_time, user_email):
             if row[5] == present_date:
                 used_time = row[1] + 3
                 dbcursor.execute(
-                    "UPDATE app_usage_info SET used_time=%s WHERE tab_name=%s AND used_day=%s AND user_email= %s",
-                    (used_time, tab_name, present_day, user_email),
+                    "UPDATE app_usage_info SET used_time=%s WHERE tab_name=%s AND used_day=%s AND email= %s AND serial_id = %s",
+                    (used_time, tab_name, present_day, user_email,serial_id),
                 )
                 print("data updated")
             else:
                 delete_query = (
-                    "DELETE FROM app_usage_info WHERE used_day =%s AND user_email =%s"
+                    "DELETE FROM app_usage_info WHERE used_day =%s AND email =%s"
                 )
                 dbcursor.execute(delete_query, (present_day, user_email))
                 print("Deleted succesfully")
         else:
-            insert_query = "INSERT INTO app_usage_info (tab_name, used_time, user_email,used_day,used_date) VALUES (%s, %s, %s,%s,%s)"
-            values = (tab_name, used_time, user_email, present_day, present_date)
+            insert_query = "INSERT INTO app_usage_info (tab_name, used_time, email,used_day,used_date,serial_id) VALUES (%s, %s, %s,%s,%s,%s)"
+            values = (tab_name, used_time, user_email, present_day, present_date,serial_id)
             dbcursor.execute(insert_query, values)
             print("New Data Inserted")
-
         conn.commit()
 
     except Error as e:

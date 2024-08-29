@@ -3,6 +3,7 @@ import pygetwindow as gw
 import config
 from pywinauto import Application
 import session
+import serial_id
 
 tlds = [
     # Generic Top-Level Domains (gTLDs)
@@ -114,9 +115,10 @@ def get_fire_fox():
 
 
 def main():
-    if session.session_started:
+    # if session.session_started:
         used_time = 0
-        user_email = session.session_email
+        # user_email = session.session_email
+        user_email = 'yareyaredazey108@gmail.com'
         while True:
             title = None
             active_window = gw.getActiveWindow()
@@ -124,16 +126,16 @@ def main():
             if active_window is not None:
                 if "Google Chrome" in active_window.title:
                     title = google_chr()
-                    used_time += 1
+                    used_time += 3
                     time.sleep(3)
                 elif "Microsoft​ Edge" in active_window.title:
                     title = get_edge_url()
-                    used_time += 1
+                    used_time += 3
                     time.sleep(3)
 
                 elif "Mozilla Firefox" in active_window.title:
                     title = get_fire_fox()
-                    used_time += 1
+                    used_time += 3
                     time.sleep(3)
 
                 else:
@@ -142,5 +144,8 @@ def main():
 
             if title:
                 db = config
-                db.insert(title, used_time, user_email)
-                print(title)
+                s_id = serial_id.get_serial_number()
+                db.insert(title, used_time, user_email, s_id)
+                print(f"  {user_email} {s_id} {title}")
+
+main()
