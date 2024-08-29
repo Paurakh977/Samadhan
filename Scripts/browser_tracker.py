@@ -148,4 +148,3 @@ def main():
                 db.insert_app_info(title, used_time, user_email, s_id)
                 print(f"  {user_email} {s_id} {title}")
 
-main()

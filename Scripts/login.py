@@ -97,7 +97,7 @@ class LoginWindow(QtWidgets.QMainWindow):
             name = profile.get("names", [{}])[0].get("displayName", "N/A")
             email = profile.get("emailAddresses", [{}])[0].get("value", "N/A")
             status = handle_google_login(email, serial_id)
-            if status:
+            if status[0]:
                 session.session_started = True
                 session.session_username = name
                 session.session_email = email

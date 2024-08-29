@@ -25,7 +25,8 @@ def insert_app_info(tab_name, used_time, user_email, serial_id):
         row = dbcursor.fetchone()
 
         if row:
-            if row[5] == present_date:
+
+            if str(row[5]) == str(present_date):
                 used_time = row[1] + 3
                 dbcursor.execute(
                     "UPDATE app_usage_info SET used_time=%s WHERE tab_name=%s AND used_day=%s AND email= %s AND serial_id = %s",
@@ -105,7 +106,7 @@ def handle_google_login(email, serial_id):
 
     if records:
         records_query = (
-            "SELECT * FROM user_info_manual WHERE email = %s AND serial_id = %s"
+            "SELECT * FROM user_info_google WHERE email = %s AND serial_id = %s"
         )
         dbcursor.execute(records_query, (email, serial_id))
         results = dbcursor.fetchall()

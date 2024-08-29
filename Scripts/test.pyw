@@ -134,7 +134,7 @@ def track_application() -> list[str,int]:
             time.sleep(3)
 
         else:
-            active_window=active_window.split("-")[-1].strip()
+            active_window=str(active_window.title).split("-")[-1]
             title=active_window
             used_time+=3
             time.sleep(3)
@@ -145,9 +145,11 @@ while True:
     status, name, email = config.get_login_status()
     if status:
         title,used_time=track_application()
+        print("title:",title)
         if title and used_time:  
             sereial_id=get_serial_number()  
             insert_app_info(title,used_time,email,sereial_id)
     else:
+        print("no status")
         time.sleep(10)
             
