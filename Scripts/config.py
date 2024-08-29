@@ -11,12 +11,12 @@ def get_connection():
     )
 
 
-def insert(tab_name, used_time, user_email, serial_id):
+def insert_app_info(tab_name, used_time, user_email, serial_id):
     try:
         conn = get_connection()
         dbcursor = conn.cursor()
         now = datetime.datetime.now()
-        present_date = datetime.date.today()
+        present_date = str(now.today()).split()[0]
         present_day = now.strftime("%A")
         dbcursor.execute(
             "SELECT * FROM app_usage_info WHERE tab_name=%s AND used_day=%s AND email=%s AND serial_id = %s",
