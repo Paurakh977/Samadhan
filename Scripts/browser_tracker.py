@@ -116,35 +116,34 @@ def get_fire_fox():
 
 def main():
     # if session.session_started:
-        used_time = 0
-        # user_email = session.session_email
-        user_email = 'yareyaredazey108@gmail.com'
-        while True:
-            title = None
-            active_window = gw.getActiveWindow()
+    used_time = 0
+    # user_email = session.session_email
+    user_email = "yareyaredazey108@gmail.com"
+    while True:
+        title = None
+        active_window = gw.getActiveWindow()
 
-            if active_window is not None:
-                if "Google Chrome" in active_window.title:
-                    title = google_chr()
-                    used_time += 3
-                    time.sleep(3)
-                elif "Microsoft​ Edge" in active_window.title:
-                    title = get_edge_url()
-                    used_time += 3
-                    time.sleep(3)
+        if active_window is not None:
+            if "Google Chrome" in active_window.title:
+                title = google_chr()
+                used_time += 3
+                time.sleep(3)
+            elif "Microsoft​ Edge" in active_window.title:
+                title = get_edge_url()
+                used_time += 3
+                time.sleep(3)
 
-                elif "Mozilla Firefox" in active_window.title:
-                    title = get_fire_fox()
-                    used_time += 3
-                    time.sleep(3)
+            elif "Mozilla Firefox" in active_window.title:
+                title = get_fire_fox()
+                used_time += 3
+                time.sleep(3)
 
-                else:
-                    print("no browser active rn")
-                    time.sleep(3)
+            else:
+                print("no browser active rn")
+                time.sleep(3)
 
-            if title:
-                db = config
-                s_id = serial_id.get_serial_number()
-                db.insert_app_info(title, used_time, user_email, s_id)
-                print(f"  {user_email} {s_id} {title}")
-
+        if title:
+            db = config
+            s_id = serial_id.get_serial_number()
+            db.insert_app_info(title, used_time, user_email, s_id)
+            print(f"  {user_email} {s_id} {title}")

@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QProgres
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
+
 class CustomProgressBar(QWidget):
     def __init__(self, stack1, stack2, stack3, stack4):
         super().__init__()
@@ -21,7 +22,7 @@ class CustomProgressBar(QWidget):
         layout = QVBoxLayout()
 
         # Add the label above the progress bar with custom font
-        label = QLabel('3 h 52 m less than yesterday')
+        label = QLabel("3 h 52 m less than yesterday")
         label.setFont(QFont("Arial", 12, QFont.Bold))
         label.setStyleSheet("color: #444444;")
         layout.addWidget(label)
@@ -30,7 +31,9 @@ class CustomProgressBar(QWidget):
         self.progressBar = QProgressBar(self)
         self.progressBar.setTextVisible(False)
         self.progressBar.setRange(0, 100)
-        self.progressBar.setValue(100)  # Set to 100% since we are controlling the chunks manually
+        self.progressBar.setValue(
+            100
+        )  # Set to 100% since we are controlling the chunks manually
 
         # Customize the appearance with stylesheets
         self.progressBar.setStyleSheet(f"""
@@ -61,7 +64,7 @@ class CustomProgressBar(QWidget):
 
         # Set the layout to the widget
         self.setLayout(layout)
-        self.setWindowTitle('Stacked Custom Progress Bar')
+        self.setWindowTitle("Stacked Custom Progress Bar")
         self.setGeometry(300, 300, 300, 100)
         self.show()
 
@@ -73,6 +76,7 @@ class CustomProgressBar(QWidget):
         # The color can be adjusted based on percentage if needed.
         return color
 
+
 def main():
     # Example user inputs for the four stacks
     stack1 = 0.4  # 40%
@@ -82,10 +86,11 @@ def main():
 
     # Ensure the inputs are between 0 and 1 and sum to 1 (or 100%)
     total = stack1 + stack2 + stack3 + stack4
-    
+
     app = QApplication(sys.argv)
     ex = CustomProgressBar(stack1, stack2, stack3, stack4)
     sys.exit(app.exec_())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

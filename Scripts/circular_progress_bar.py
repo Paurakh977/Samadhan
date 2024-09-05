@@ -40,7 +40,6 @@ def calculate_time_difference(
 class CircularProgress(QWidget):
     def __init__(self, start_angle, end_angle, time_difference):
         super().__init__()
-        
 
         self.start_angle = start_angle
         self.end_angle = end_angle
@@ -59,7 +58,6 @@ class CircularProgress(QWidget):
         self.progress_rounded_cap = True
         self.setMinimumSize(self.width, self.height)
         self.resize(self.width, self.height)
-        
 
         this_file_location = os.path.dirname(__file__)
         center_image = os.path.abspath(
@@ -223,7 +221,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     start_hour = 6
     start_minute = 47
-    start_period ="AM"
+    start_period = "AM"
 
     end_hour = 4
     end_minute = 28

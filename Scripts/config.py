@@ -4,6 +4,14 @@ from mysql.connector import Error
 from serial_id import get_serial_number
 
 
+# global variables
+
+now = datetime.datetime.now()
+present_date = str(now.today()).split()[0]
+present_day = now.strftime("%A")
+current_time = now.strftime("%I:%M %p")
+
+
 def get_connection():
     """Establish and return a new database connection."""
     return mysql.connector.connect(
@@ -11,26 +19,48 @@ def get_connection():
     )
 
 
+def insert_Xtra_info(status: bool) -> None:
+    """Inserts user's pickup and drop-off details."""
+    conn = None
+    dbcursor = None
+
+    try:
+        conn = get_connection()
+        dbcursor = conn.cursor()
+
+        insert_query = "INSERT INTO info (date, status, time) VALUES (%s, %s, %s)"
+        values = (present_date, int(status), current_time)
+
+        dbcursor.execute(insert_query, values)
+        conn.commit()
+
+    except Exception as e:
+        print(f"Error: {e}\nCould not insert pickup and drop-off details")
+
+    finally:
+        if dbcursor is not None:
+            dbcursor.close()
+        if conn is not None:
+            conn.close()
+
+
 def insert_app_info(tab_name, used_time, user_email, serial_id):
     try:
         conn = get_connection()
         dbcursor = conn.cursor()
-        now = datetime.datetime.now()
-        present_date = str(now.today()).split()[0]
-        present_day = now.strftime("%A")
+
         dbcursor.execute(
             "SELECT * FROM app_usage_info WHERE tab_name=%s AND used_day=%s AND email=%s AND serial_id = %s",
-            (tab_name, present_day, user_email,serial_id),
+            (tab_name, present_day, user_email, serial_id),
         )
         row = dbcursor.fetchone()
 
         if row:
-
             if str(row[5]) == str(present_date):
                 used_time = row[1] + 3
                 dbcursor.execute(
                     "UPDATE app_usage_info SET used_time=%s WHERE tab_name=%s AND used_day=%s AND email= %s AND serial_id = %s",
-                    (used_time, tab_name, present_day, user_email,serial_id),
+                    (used_time, tab_name, present_day, user_email, serial_id),
                 )
                 print("data updated")
             else:
@@ -41,7 +71,14 @@ def insert_app_info(tab_name, used_time, user_email, serial_id):
                 print("Deleted succesfully")
         else:
             insert_query = "INSERT INTO app_usage_info (tab_name, used_time, email,used_day,used_date,serial_id) VALUES (%s, %s, %s,%s,%s,%s)"
-            values = (tab_name, used_time, user_email, present_day, present_date,serial_id)
+            values = (
+                tab_name,
+                used_time,
+                user_email,
+                present_day,
+                present_date,
+                serial_id,
+            )
             dbcursor.execute(insert_query, values)
             print("New Data Inserted")
         conn.commit()
