@@ -3,6 +3,9 @@ import config  # Assuming you're using your database connection
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QLabel, QWidget, QListWidget, QListWidgetItem, QHBoxLayout, QSpacerItem, QSizePolicy
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
+from serial_id import get_serial_number
+import os
+
 
 class AppUsageWidget(QWidget):
     def __init__(self, app_name, used_time, icon_path=None):
@@ -74,7 +77,7 @@ class App(QWidget):
 
             # SQL Query
             query = "SELECT * FROM app_usage_info WHERE serial_id = %s ORDER BY tab_name"
-            user_serial_id = '1bcfadd1-06b5-4086-b4e9-a5ae90da5af5'
+            user_serial_id =get_serial_number() 
 
             # Execute the query
             cur.execute(query, (user_serial_id,))
@@ -90,7 +93,11 @@ class App(QWidget):
                 
                 # Create the custom widget with app name, time, and optional icon
                 app_item = QListWidgetItem(self.list_widget)
-                custom_widget = AppUsageWidget(tab_name, used_time, icon_path=r'C:\Users\LENOVO\Desktop\pyqt\Samadhan\Images\fb (1).png')  # Replace None with the path to app icons if available
+                this_file_location = os.path.dirname(__file__)
+                icon_file_path = os.path.abspath(
+                    os.path.join(this_file_location, "..", "Images", "fb (1).png")
+                )
+                custom_widget = AppUsageWidget(tab_name, used_time, icon_path=icon_file_path)  # Replace None with the path to app icons if available
                 app_item.setSizeHint(custom_widget.sizeHint())  # Ensure correct sizing of the widget
                 
                 # Add the custom widget to the list
