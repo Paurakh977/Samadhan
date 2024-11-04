@@ -38,14 +38,12 @@ class CustomProgressBar(QWidget):
         # Customize the appearance with stylesheets
         self.progressBar.setStyleSheet(f"""
             QProgressBar {{
-                border: 1px solid #B0BEC5;
-                border-radius: 10px;
-                background-color: #ECEFF1;
-                height: 20px;
+                border-radius: 12px;
+                height: 45px;
                 margin: 5px 0;
             }}
             QProgressBar::chunk {{
-                border-radius: 10px;
+                border-radius: 20px;
                 background: qlineargradient(
                     spread:pad, 
                     x1:0, y1:0, x2:1, y2:0, 
