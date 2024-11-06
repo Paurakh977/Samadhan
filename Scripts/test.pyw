@@ -1,3 +1,4 @@
+from datetime import datetime
 import time
 import pygetwindow as gw
 import config
@@ -45,6 +46,13 @@ tlds = [
     ".mobi",
     ".coop",
 ]
+
+def get_used_time(start, end):
+    time_format = "%H:%M:%S"  # Define the time format as a string
+    time_obj1 = datetime.strptime(start, time_format)
+    time_obj2 = datetime.strptime(end, time_format)
+    time_difference = time_obj2 - time_obj1
+    return int(time_difference.total_seconds())  # Convert to integer (seconds)
 
 
 def extract_url(url):
@@ -117,38 +125,56 @@ def track_application() -> list[str,int]:
     """Docstring for track_application"""
     title = None
     active_window = gw.getActiveWindow()
-    used_time=0
+
     if active_window is not None:
         if "Google Chrome" in active_window.title:
             title = google_chr()
-            used_time += 3
-            time.sleep(3)
+            
+            time.sleep(1)
         elif "Microsoft​ Edge" in active_window.title:
             title = get_edge_url()
-            used_time += 3
-            time.sleep(3)
+            
+            time.sleep(1)
 
         elif "Mozilla Firefox" in active_window.title:
             title = get_fire_fox()
-            used_time += 3
-            time.sleep(3)
+            
+            time.sleep(1)
 
         else:
             active_window=str(active_window.title).split("-")[-1]
             title=active_window
-            used_time+=3
-            time.sleep(3)
+            
+            time.sleep(1)
     
-    return title,used_time
+    return title
+
+prev_window,start_time,end_time=None,None,None
+
 
 while True:
     status, name, email = config.get_login_status()
     if status:
-        title,used_time=track_application()
+        title=track_application()
+        if prev_window is None:
+            prev_window=title
+        if start_time is None:
+            start_time=datetime.now().strftime("%H:%M:%S")
+            
         print("title:",title)
-        if title and used_time:  
+        
+        if (title) and (title!=prev_window) :  
             sereial_id=get_serial_number()  
-            insert_app_info(title,used_time,email,sereial_id)
+            end_time= datetime.now().strftime("%H:%M:%S")
+            used_time=get_used_time(start_time,end_time)
+            start_time=end_time
+            end_time=None
+            insert_app_info(prev_window,used_time,email,sereial_id)
+            print(f"inserted {prev_window} for time {used_time}")
+            prev_window=title
+            
+        else:
+            print(f"still running {title} or {prev_window}")
     else:
         print("no status")
         time.sleep(10)

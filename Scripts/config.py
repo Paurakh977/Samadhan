@@ -63,10 +63,10 @@ def insert_app_info(tab_name, used_time, user_email, serial_id):
 
         if row:
             if str(row[5]) == str(present_date):
-                used_time = row[1] + 3
+                new_used_time = int(row[1]) + used_time
                 dbcursor.execute(
                     "UPDATE app_usage_info SET used_time=%s WHERE tab_name=%s AND used_day=%s AND email= %s AND serial_id = %s",
-                    (used_time, tab_name, present_day, user_email, serial_id),
+                    (new_used_time, tab_name, present_day, user_email, serial_id),
                 )
                 print("data updated")
             else:
