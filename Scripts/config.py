@@ -7,7 +7,7 @@ from serial_id import get_serial_number
 def get_connection():
     """Establish and return a new database connection."""
     return mysql.connector.connect(
-        host="sql12.freesqldatabase.com", user="sql12742625", password="VSjrk6kRWv", database="sql12742625"
+        host="sql12.freesqldatabase.com", user="sql12744269", password="kKm4yjKASi", database="sql12744269"
     )
 
 
