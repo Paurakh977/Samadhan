@@ -103,22 +103,43 @@ def get_edge_url():
             print(f"error in edge module \n{e}")
             return None
 
-
+def get_brave_url():
+    try:
+        app = Application(backend='uia').connect(title_re=".*Brave.*", found_index=0)
+        dlg = app.top_window()
+        edit_controls = dlg.descendants(control_type="Edit")
+        for edit in edit_controls:
+            try:
+                url_content = edit.get_value()
+                if url_content is not None:  
+                    return extract_url(url_content)
+            except Exception as inner_e:
+                print(f"Inner error retrieving content from edit control: in brave {inner_e}")
+        print("No content found in available Edit controls. in brave")
+        return "Brave"
+    except Exception as e:
+        print(f"Error retrieving Brave content:\n{e}")
+        return "Brave"
+    
 def get_fire_fox():
     try:
-        app = Application(backend="uia").connect(title_re=".*Mozilla Firefox.*")
+        app = Application(backend='uia').connect(title_re=".*Firefox.*", found_index=0)
         dlg = app.top_window()
-        url_bar = dlg.child_window(control_type="Edit", found_index=0)
-        url = url_bar.get_value()
-        return extract_url(url)
+        edit_controls = dlg.descendants(control_type="Edit")
+        for edit in edit_controls:
+            try:
+                url_content = edit.get_value()
+                if url_content is not None:  
+                    return extract_url(url_content)
+            except Exception as inner_e:
+                print(f"Inner error retrieving content from edit control: in mozila fire fox {inner_e}")
+
+        # If no content is found in any Edit controls
+        print("No content found in available Edit controls.")
+        return ""
     except Exception as e:
-        try:
-            url_bar = dlg.descendants(control_type="Edit")[0]
-            url = url_bar.get_value()
-            return extract_url(url)
-        except Exception as nested_e:
-            print(f"Error in Firefox module: {nested_e}")
-            return None
+        print(f"Error retrieving Firefox content:\n{e}")
+        return "fire fox"
 
 
 def track_application() -> list[str,int]:
@@ -141,6 +162,11 @@ def track_application() -> list[str,int]:
             
             time.sleep(1)
 
+        elif "Brave" in active_window.title:
+            title= get_brave_url()
+            
+            time.sleep(1)
+        
         else:
             active_window=str(active_window.title).split("-")[-1]
             title=active_window
