@@ -6,6 +6,7 @@ from pywinauto import Application
 from config import insert_app_info
 from serial_id import get_serial_number
 from pywinauto.findwindows import ElementNotFoundError
+from mysql.connector import OperationalError
 tlds = [
     # Generic Top-Level Domains (gTLDs)
     ".com",
@@ -186,15 +187,39 @@ def track_application() -> list[str,int]:
             
             time.sleep(1)
     
-    return title
+    try:
+        if title:
+            return title
+    except (RuntimeError,RuntimeWarning) as e:
+        print(f"runtime error as : {e}")
+        time.sleep(5)
+        return "Error"
+    except Exception as e:
+        print(e)
+        return "Error"
+    return "Empty" 
+        
+        
 
 prev_window,start_time,end_time=None,None,None
 
 
 while True:
-    status, name, email = config.get_login_status()
+    try:
+        status, name, email = config.get_login_status()
+    except (RuntimeError,RuntimeWarning,OperationalError,Exception) as e:
+        print(f"could not get login_status {e}")
+        time.sleep(5)
+        status=None
+        
     if status:
-        title=track_application()
+        try:
+            title=track_application()
+        except (RuntimeError,RuntimeWarning,OperationalError,Exception) as e:
+            print(f"could not track application {e}")
+            time.sleep(5)
+            title=None
+            
         if prev_window is None:
             prev_window=title
         if start_time is None:
@@ -217,4 +242,3 @@ while True:
     else:
         print("no status")
         time.sleep(10)
-            

@@ -1,14 +1,32 @@
+import time
 import mysql.connector
 import datetime
-from mysql.connector import Error
+from mysql.connector import Error, OperationalError
 from serial_id import get_serial_number
 
 
 def get_connection():
-    """Establish and return a new database connection."""
-    return mysql.connector.connect(
-        host="sql12.freesqldatabase.com", user="sql12744269", password="kKm4yjKASi", database="sql12744269"
-    )
+    """Establish and return a new database connection, with infinite retries if needed."""
+    attempt = 0
+    while True:  # Infinite loop to keep retrying until successful
+        try:
+            connection = mysql.connector.connect(
+                host="sql12.freesqldatabase.com",
+                user="sql12744269",
+                password="kKm4yjKASi",
+                database="sql12744269",
+            )
+            if connection.is_connected():
+                print("Connected to MySQL successfully.")
+                return connection
+        except OperationalError as e:
+            attempt += 1
+            print(f"Attempt {attempt}: Lost connection to MySQL. Retrying... Error: {e}")
+            time.sleep(5)  # Wait longer to allow the system to reconnect after sleep
+        except Error as e:
+            attempt += 1
+            print(f"Attempt {attempt}: Database connection failed. Error: {e}")
+            time.sleep(5)
 
 
 def insert_Xtra_info(status: bool) -> None:
