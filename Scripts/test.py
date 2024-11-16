@@ -73,7 +73,7 @@ def tld_checker(url):
         if tld in url:
             url = url.split(tld)[0]
             return url
-    else:
+    else:   
         url = url.split(".")
         return max(url, key=len)
 
@@ -91,7 +91,7 @@ def google_chr():
         return ("chrome")
     except Exception as e:
         print(f"error in the module for chrome \n error is:\n{e}")
-        return None
+        return "chrome"
 
 
 def get_edge_url():
@@ -109,7 +109,7 @@ def get_edge_url():
             return "Edge"
         except Exception as e:
             print(f"error in edge module \n{e}")
-            return None
+            return "Edge"
 
 def get_brave_url():
     try:
@@ -147,13 +147,13 @@ def get_fire_fox():
 
         # If no content is found in any Edit controls
         print("No content found in available Edit controls.")
-        return ""
+        return "Fire Fox"
     except ElementNotFoundError :
         time.sleep(3)
         return "Fire Fox"
     except Exception as e:
         print(f"Error retrieving Firefox content:\n{e}")
-        return "Fire fox"
+        return "Fire Fox"
 
 
 def track_application() -> list[str,int]:
