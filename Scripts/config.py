@@ -1,28 +1,50 @@
 import time
 import mysql.connector
 import datetime
-from mysql.connector import Error, OperationalError
+from mysql.connector import Error, OperationalError,pooling
 from serial_id import get_serial_number
 
+pool = None
+
+def initialize_pool():
+    global pool
+    
+    try:
+        pool = pooling.MySQLConnectionPool(
+        pool_name="mypool",
+        pool_size=5,
+        host='127.0.0.1',         
+        user='root',
+        password='',               
+        database='samadhandb'
+    )
+    except OperationalError as e:
+        print(f"operational error in inittializing the pool as {e}")
+        time.sleep(5)
+        initialize_pool()
+    except Exception as e:
+        print(f"failed to initiaalize pool as {e}")
+        time.sleep(5)
+        initialize_pool()        
 
 def get_connection():
     """Establish and return a new database connection, with infinite retries if needed."""
     attempt = 0
-    while True:  # Infinite loop to keep retrying until successful
+    global pool
+    
+    if pool is None:
+        initialize_pool()
+    
+    while True: 
         try:
-            connection = mysql.connector.connect(
-                host="sql12.freesqldatabase.com",
-                user="sql12744269",
-                password="kKm4yjKASi",
-                database="sql12744269",
-            )
+            connection = pool.get_connection()
             if connection.is_connected():
                 print("Connected to MySQL successfully.")
                 return connection
         except OperationalError as e:
             attempt += 1
             print(f"Attempt {attempt}: Lost connection to MySQL. Retrying... Error: {e}")
-            time.sleep(5)  # Wait longer to allow the system to reconnect after sleep
+            time.sleep(5)  
         except Error as e:
             attempt += 1
             print(f"Attempt {attempt}: Database connection failed. Error: {e}")
@@ -36,12 +58,8 @@ def insert_Xtra_info(status: bool) -> None:
     
     now = datetime.datetime.now()
     present_date = str(now.today()).split()[0]
-    present_day = now.strftime("%A")
     current_time = now.strftime("%I:%M %p")
-    now = datetime.datetime.now()
-    present_date = str(now.today()).split()[0]
-    present_day = now.strftime("%A")
-    current_time = now.strftime("%I:%M %p")
+    
     
     try:
         conn = get_connection()
@@ -71,7 +89,6 @@ def insert_app_info(tab_name, used_time, user_email, serial_id):
         now = datetime.datetime.now()
         present_date = str(now.today()).split()[0]
         present_day = now.strftime("%A")
-        current_time = now.strftime("%I:%M %p")
         
         dbcursor.execute(
             "SELECT * FROM app_usage_info WHERE tab_name=%s AND used_day=%s AND email=%s AND serial_id = %s",
@@ -136,7 +153,6 @@ def insert_manual_users(name, email, phone, password, serail_id, radio):
         conn.commit()
         conn.close()
         return False
-
 
 def insert_user(name, email, serial_id):
     conn = get_connection()
