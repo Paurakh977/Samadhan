@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 10, 2024 at 03:29 PM
+-- Generation Time: Nov 17, 2024 at 12:35 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,6 +24,18 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `app_hour_data`
+--
+
+CREATE TABLE `app_hour_data` (
+  `id` int(11) NOT NULL,
+  `app_name` varchar(255) NOT NULL,
+  `hour` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `app_usage_info`
 --
 
@@ -37,33 +49,6 @@ CREATE TABLE `app_usage_info` (
   `email` varchar(100) DEFAULT NULL,
   `serial_id` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `app_usage_info`
---
-
-INSERT INTO `app_usage_info` (`tab_name`, `used_time`, `browser`, `SN`, `used_day`, `used_date`, `email`, `serial_id`) VALUES
-(' Visual Studio Code', 42, NULL, 54, 'Thursday', '2024-08-29', 'dollarchaeyo@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('replit', 18, NULL, 55, 'Thursday', '2024-08-29', 'dollarchaeyo@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('whatsapp', 6, NULL, 56, 'Thursday', '2024-08-29', 'dollarchaeyo@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('youtube', 3, NULL, 57, 'Thursday', '2024-08-29', 'dollarchaeyo@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('php?route=/sql&pos=0&db=samadhandb&table=app_usage_info', 3, NULL, 61, 'Thursday', '2024-08-29', 'dollarchaeyo@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('Task Switching', 3, NULL, 63, 'Thursday', '2024-08-29', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('SAMADHAN', 9, NULL, 64, 'Thursday', '2024-08-29', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('youtube', 54, NULL, 65, 'Thursday', '2024-08-29', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('replit', 3, NULL, 66, 'Thursday', '2024-08-29', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('google', 78, NULL, 67, 'Thursday', '2024-08-29', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-(' Visual Studio Code', 15, NULL, 68, 'Saturday', '2024-08-31', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('google', 54, NULL, 69, 'Saturday', '2024-08-31', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('Task Switching', 3, NULL, 70, 'Saturday', '2024-08-31', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('php?route=/sql&pos=0&db=samadhandb&table=app_usage_info', 63, NULL, 71, 'Saturday', '2024-08-31', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('facebook', 6, NULL, 72, 'Saturday', '2024-08-31', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('Clock', 15, NULL, 73, 'Saturday', '2024-08-31', 'paurakh.pandey@sifal.deerwalk.edu.np', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-(' Visual Studio Code', 27, NULL, 74, 'Saturday', '2024-08-31', 'dada@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('Search', 6, NULL, 75, 'Saturday', '2024-08-31', 'dada@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('Clock', 126, NULL, 76, 'Saturday', '2024-08-31', 'dada@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('php?route=/sql&pos=0&db=samadhandb&table=user_info_google', 3, NULL, 77, 'Saturday', '2024-08-31', 'dada@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2'),
-('php?route=/sql&pos=0&db=samadhandb&table=app_usage_info', 18, NULL, 78, 'Saturday', '2024-08-31', 'dada@gmail.com', 'f8a294e2-f241-4eca-a964-c0c88c21f3c2');
 
 -- --------------------------------------------------------
 
@@ -135,6 +120,12 @@ INSERT INTO `user_info_manual` (`user_id`, `username`, `phnumber`, `email`, `pas
 --
 
 --
+-- Indexes for table `app_hour_data`
+--
+ALTER TABLE `app_hour_data`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `app_usage_info`
 --
 ALTER TABLE `app_usage_info`
@@ -163,10 +154,16 @@ ALTER TABLE `user_info_manual`
 --
 
 --
+-- AUTO_INCREMENT for table `app_hour_data`
+--
+ALTER TABLE `app_hour_data`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `app_usage_info`
 --
 ALTER TABLE `app_usage_info`
-  MODIFY `SN` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `SN` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `info`
