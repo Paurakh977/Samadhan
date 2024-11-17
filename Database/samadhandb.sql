@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 17, 2024 at 12:35 PM
+-- Generation Time: Nov 17, 2024 at 12:44 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -30,7 +30,8 @@ SET time_zone = "+00:00";
 CREATE TABLE `app_hour_data` (
   `id` int(11) NOT NULL,
   `app_name` varchar(255) NOT NULL,
-  `hour` int(11) NOT NULL
+  `hour` int(11) NOT NULL,
+  `used_time` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
