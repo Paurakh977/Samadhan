@@ -2,7 +2,7 @@ import sys, os
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QFont
 from PyQt5.uic import loadUi
-from stack_bar import StackedBarGraph
+from stack_bar import StackedBarGraph,data
 from circular_progress_bar import CircularProgress, get_angle, calculate_time_difference
 
 
@@ -33,6 +33,7 @@ class HomeWindow(QtWidgets.QMainWindow):
         # Adding the StackedBarGraph widget to the stack_bar_frame
         self.stack_bar_graph = StackedBarGraph(self.stack_bar_frame)
         self.stack_bar_frame_layout.addWidget(self.stack_bar_graph)
+        self.stack_bar_graph.plotGraph(data=data)
 
         # collecting params for iniitialzin ciruclar progressbar
         start_hour = 6
