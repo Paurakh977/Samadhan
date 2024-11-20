@@ -18,10 +18,14 @@ class StackedBarGraph(QtWidgets.QWidget):
         self.plotGraph()
 
     def plotGraph(self):
+        
         times = np.arange(24)  # 24 hours
         social_networking = np.random.randint(5, 15, size=24)
         entertainment = np.random.randint(5, 15, size=24)
         productivity = np.random.randint(5, 15, size=24)
+        total_social_networking = np.sum(social_networking)
+        total_entertainment = np.sum(entertainment)
+        total_productivity = np.sum(productivity)
 
         # Define multiple shades of blue and orange
         blue_shades = ["#1E88E5", "#42A5F5", "#90CAF9"]
@@ -32,7 +36,8 @@ class StackedBarGraph(QtWidgets.QWidget):
         ax.clear()
 
         bar_width = 0.5
-
+        max_stack_height = np.max(social_networking + entertainment + productivity)
+        padding=0.5 * max_stack_height
         # Stack bars with gradient colors
         p1 = ax.bar(
             times,
@@ -82,9 +87,43 @@ class StackedBarGraph(QtWidgets.QWidget):
                 color=gray_shades[i],
             )
 
+        ax.text(
+            25, max_stack_height + 30,  # Position near the first bar and above the graph
+            f"Social Networking: {total_social_networking}m",
+            color=blue_shades[0],
+            fontsize=16,
+            fontweight="bold",
+            ha="right",
+        )
+        ax.text(
+            25, max_stack_height + 27,  # Adjust Y position for spacing
+            f"Entertainment: {total_entertainment}m",
+            color=orange_shades[0],
+            fontsize=16,
+            fontweight="bold",
+            ha="right",
+        )
+        ax.text(
+            25, max_stack_height + 24,  # Adjust Y position for spacing
+            f"Productivity: {total_productivity}m",
+            color=gray_shades[0],
+            fontsize=16,
+            fontweight="bold",
+            ha="right", 
+        )
+        
+        max_stack_height = np.max(social_networking + entertainment + productivity)
+        padding=1 * max_stack_height
+        ax.set_yticks([0, 15, 30, 45, 60])
+        ax.set_yticklabels(["0m", "15m", "30m", "45m", "60m"], fontsize=10)
+        ax.set_ylim(0, max_stack_height + padding)  # Use the updated ylim
+
+        ax.yaxis.set_label_position('left')
+        ax.yaxis.tick_left()
+        
+        ax.set_ylim(0, max_stack_height + 25) 
         ax.set_xlabel("Time of Day", fontsize=12, weight="bold", color="#333333")
-        ax.set_ylabel("Hours", fontsize=12, weight="bold", color="#333333")
-        ax.set_title("Daily Screen Time", fontsize=18, weight="bold", color="#333333")
+        ax.set_title("Daily Screen Time", fontsize=18, weight="bold", color="#333333",loc='center')
 
         # Remove grid and spines
         ax.grid(False)
@@ -101,10 +140,8 @@ class StackedBarGraph(QtWidgets.QWidget):
             weight="bold",
             color="gray",
         )
-        ax.set_yticks([])
+        
 
-        # Hide y-axis
-        ax.get_yaxis().set_visible(False)
 
         # Add legend outside the plot
         ax.legend(
