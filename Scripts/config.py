@@ -1,23 +1,23 @@
 import time
-import mysql.connector
 import datetime
-from mysql.connector import Error, OperationalError,pooling
+from mysql.connector import Error, OperationalError, pooling
 from serial_id import get_serial_number
 
 pool = None
 
+
 def initialize_pool():
     global pool
-    
+
     try:
         pool = pooling.MySQLConnectionPool(
-        pool_name="mypool",
-        pool_size=5,
-        host='127.0.0.1',         
-        user='root',
-        password='',               
-        database='samadhandb'
-    )
+            pool_name="mypool",
+            pool_size=5,
+            host="127.0.0.1",
+            user="root",
+            password="",
+            database="samadhandb",
+        )
     except OperationalError as e:
         print(f"operational error in inittializing the pool as {e}")
         time.sleep(5)
@@ -25,17 +25,18 @@ def initialize_pool():
     except Exception as e:
         print(f"failed to initiaalize pool as {e}")
         time.sleep(5)
-        initialize_pool()        
+        initialize_pool()
+
 
 def get_connection():
     """Establish and return a new database connection, with infinite retries if needed."""
     attempt = 0
     global pool
-    
+
     if pool is None:
         initialize_pool()
-    
-    while True: 
+
+    while True:
         try:
             connection = pool.get_connection()
             if connection.is_connected():
@@ -43,24 +44,54 @@ def get_connection():
                 return connection
         except OperationalError as e:
             attempt += 1
-            print(f"Attempt {attempt}: Lost connection to MySQL. Retrying... Error: {e}")
-            time.sleep(5)  
+            print(
+                f"Attempt {attempt}: Lost connection to MySQL. Retrying... Error: {e}"
+            )
+            time.sleep(5)
         except Error as e:
             attempt += 1
             print(f"Attempt {attempt}: Database connection failed. Error: {e}")
             time.sleep(5)
 
 
+def calculate_hourly_usage(start_time: str, end_time: str) -> dict:
+    start = datetime.datetime.strptime(start_time, "%H:%M:%S")
+    end = datetime.datetime.strptime(end_time, "%H:%M:%S")
+    print(start, end)
+
+    if end < start:
+        end += datetime.timedelta(days=1)
+
+    usage_per_hour = {}
+
+    current = start
+    while current < end:
+        next_hour = (current + datetime.timedelta(hours=1)).replace(
+            minute=0, second=0, microsecond=0
+        )
+
+        if next_hour > end:
+            next_hour = end
+
+        seconds_used = int((next_hour - current).total_seconds())
+        usage_per_hour[current.hour] = (
+            usage_per_hour.get(current.hour, 0) + seconds_used
+        )
+
+        current = next_hour
+
+    return usage_per_hour
+
+
 def insert_Xtra_info(status: bool) -> None:
     """Inserts user's pickup and drop-off details."""
     conn = None
     dbcursor = None
-    
+
     now = datetime.datetime.now()
     present_date = str(now.today()).split()[0]
     current_time = now.strftime("%I:%M %p")
-    
-    
+
     try:
         conn = get_connection()
         dbcursor = conn.cursor()
@@ -81,15 +112,119 @@ def insert_Xtra_info(status: bool) -> None:
             conn.close()
 
 
+def insert_app_hourly_info(
+    start_time, end_time, used_time, app_name, serial_id, user_email
+):
+    try:
+        conn = get_connection()
+        dbcursor = conn.cursor()
+
+        st_hour = start_time.split(":")[0]
+        end_hour = end_time.split(":")[0]
+
+        now = datetime.datetime.now()
+        present_date = str(now.today()).split()[0]
+        present_day = now.strftime("%A")
+
+        def do_if_row_exists(st_hour, used_time=used_time):
+            dbcursor.execute(
+                "SELECT * FROM app_hour_data WHERE app_name=%s AND used_day=%s AND email=%s AND serial_id = %s AND hour=%s",
+                (app_name, present_day, user_email, serial_id, st_hour),
+            )
+
+            row = dbcursor.fetchone()
+
+            if row:
+                # check that even it is for the same date or not if not delete the previous one
+                if (
+                    str(row[5]) == str(present_date)
+                ):  # This app has already been used for this hour on this day now updated this time
+                    new_used_time = int(row[3]) + used_time
+
+                    dbcursor.execute(
+                        "UPDATE app_hour_data SET used_time=%s WHERE app_name=%s AND used_day=%s AND email= %s AND serial_id = %s AND hour=%s",
+                        (
+                            new_used_time,
+                            app_name,
+                            present_day,
+                            user_email,
+                            serial_id,
+                            st_hour,
+                        ),
+                    )
+                    conn.commit()
+                    print(f"data updated for {app_name}")
+                    return True
+
+                else:
+                    delete_query = (
+                        "DELETE FROM app_hour_data WHERE used_day =%s AND email =%s"
+                    )
+                    dbcursor.execute(delete_query, (present_day, user_email))
+                    conn.commit()
+                    print("Deleted succesfully")
+
+                    return True
+
+            return False
+
+        def do_if_row_doesnot_exists(st_hour, used_time=used_time):
+            try:
+                insert_query = "INSERT INTO app_hour_data (app_name, hour, used_time,used_day,used_date,email,serial_id) VALUES (%s, %s, %s,%s,%s,%s,%s)"
+                values = (
+                    app_name,
+                    st_hour,
+                    used_time,
+                    present_day,
+                    present_date,
+                    user_email,
+                    serial_id,
+                )
+                dbcursor.execute(insert_query, values)
+                print(f"New Data Inserted in the hourly table for {app_name}")
+                conn.commit()
+                return True
+            except Exception as e:
+                print(f"error in inserting the hourly data : {e}")
+                return False
+
+        if st_hour == end_hour:
+            if do_if_row_exists(st_hour):
+                print(f"data updated for {app_name} with time : {used_time}")
+
+            else:  # No such row exists from before but start_time_hour== end_time_hour
+                print(
+                    f"data inserted for {app_name} with time : {used_time}"
+                ) if do_if_row_doesnot_exists(st_hour) else None
+
+        else:  # start_time_hour !== end_time_hour
+            usage_info_dict = calculate_hourly_usage(start_time, end_time)
+            print(f"MY DICITONARY: ---> {usage_info_dict}")
+            for keys, values in usage_info_dict.items():
+                if do_if_row_exists(st_hour=keys, used_time=values):
+                    print(f"----data updated for {app_name} with time : {values}----")
+                else:
+                    do_if_row_doesnot_exists(st_hour=keys, used_time=values)
+                    print(f"-----data inserted for {app_name} with time : {values}----")
+
+    except Exception as e:
+        print(f"problem in insert_app_hourly_info function :{e}")
+    finally:
+        if conn.is_connected():
+            dbcursor.close()
+            conn.close()
+            print("MySQL connection is closed")
+
+
 def insert_app_info(tab_name, used_time, user_email, serial_id):
     try:
         conn = get_connection()
         dbcursor = conn.cursor()
-        
+
         now = datetime.datetime.now()
         present_date = str(now.today()).split()[0]
         present_day = now.strftime("%A")
-        
+
         dbcursor.execute(
             "SELECT * FROM app_usage_info WHERE tab_name=%s AND used_day=%s AND email=%s AND serial_id = %s",
             (tab_name, present_day, user_email, serial_id),
@@ -103,12 +238,14 @@ def insert_app_info(tab_name, used_time, user_email, serial_id):
                     "UPDATE app_usage_info SET used_time=%s WHERE tab_name=%s AND used_day=%s AND email= %s AND serial_id = %s",
                     (new_used_time, tab_name, present_day, user_email, serial_id),
                 )
+                conn.commit()
                 print("data updated")
             else:
                 delete_query = (
                     "DELETE FROM app_usage_info WHERE used_day =%s AND email =%s"
                 )
                 dbcursor.execute(delete_query, (present_day, user_email))
+                conn.commit()
                 print("Deleted succesfully")
         else:
             insert_query = "INSERT INTO app_usage_info (tab_name, used_time, email,used_day,used_date,serial_id) VALUES (%s, %s, %s,%s,%s,%s)"
@@ -121,8 +258,8 @@ def insert_app_info(tab_name, used_time, user_email, serial_id):
                 serial_id,
             )
             dbcursor.execute(insert_query, values)
+            conn.commit()
             print("New Data Inserted")
-        conn.commit()
 
     except Error as e:
         print(f"Error: {e}")
@@ -153,6 +290,7 @@ def insert_manual_users(name, email, phone, password, serail_id, radio):
         conn.commit()
         conn.close()
         return False
+
 
 def insert_user(name, email, serial_id):
     conn = get_connection()
