@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 17, 2024 at 12:44 PM
+-- Generation Time: Nov 21, 2024 at 06:18 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,7 +31,11 @@ CREATE TABLE `app_hour_data` (
   `id` int(11) NOT NULL,
   `app_name` varchar(255) NOT NULL,
   `hour` int(11) NOT NULL,
-  `used_time` int(11) NOT NULL
+  `used_time` int(11) NOT NULL,
+  `used_day` varchar(10) DEFAULT NULL,
+  `used_date` date DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `serial_id` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
