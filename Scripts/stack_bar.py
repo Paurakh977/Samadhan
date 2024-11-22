@@ -28,8 +28,8 @@ class StackedBarGraph(QtWidgets.QWidget):
 
         
         # Define gradient shades for each category
-        blue_shades = ["#1E88E5", "#42A5F5", "#90CAF9"]  # Social Networking
-        light_blue_shades = ["#63A9F5", "#85C2F7", "#B2D9FB"]  # Entertainment
+        blue_shades =  ["#1E88E5", "#42A5F5", "#90CAF9"]  # Social  # Social Networking
+        light_blue_shades = ["#A0C8F9", "#A4CFF8", "#D1E5FB"]
         orange_shades = ["#FB8C00", "#FFA726", "#FFCC80"]  # Productivity
         gray_shades = ["#C0C0C0", "#D3D3D3", "#E0E0E0"]  # Other
 
