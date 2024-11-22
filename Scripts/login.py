@@ -54,7 +54,7 @@ class LoginWindow(QtWidgets.QMainWindow):
             if status:
                 self.close()
                 self.main_window = MyMainWindow()
-                self.main_window.get_menu(name=name, email=email)
+                self.main_window.get_menu(name=name)
             else:
                 for line_edit in self.findChildren(QtWidgets.QLineEdit):
                     line_edit.clear()
