@@ -111,9 +111,10 @@ def insert_Xtra_info(status: bool) -> None:
         if conn is not None:
             conn.close()
 
-def get_hourly_details(email,serial_id):
-    result_dict={}
-   
+
+def get_hourly_details(email, serial_id):
+    result_dict = {}
+
     now = datetime.datetime.now()
     present_day = now.strftime("%A")
 
@@ -127,25 +128,32 @@ def get_hourly_details(email,serial_id):
         dbcursor = conn.cursor()
         dbcursor.execute(query, (email, present_day, serial_id))
         rows = dbcursor.fetchall()
-        
+
         if rows:
+            print(len(rows))
             for row in rows:
                 app_name = row[0]
                 hour_used_time = [row[1], row[2]]
-                result_dict[app_name] = hour_used_time
-        
+
+                if app_name in result_dict:
+                    result_dict[app_name].append(hour_used_time)
+                else:
+                    result_dict[app_name] = [hour_used_time]
+
+            print(len(result_dict))
             return result_dict
         else:
             return None
-    
+
     except Exception as e:
         print(f"error in getting hourly details as ---> {e}")
-        
+
     finally:
         if conn.is_connected():
             dbcursor.close()
             conn.close()
             print("MySQL connection is closed")
+
 
 def insert_app_hourly_info(
     start_time, end_time, used_time, app_name, serial_id, user_email
