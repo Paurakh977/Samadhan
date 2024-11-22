@@ -6,9 +6,9 @@ import main_file
 
 
 class MenuWindow(QtWidgets.QMainWindow):
-    def __init__(self, history):
-        self.username = None
-        self.email = None
+    def __init__(self, history,username,email):
+        self.username = username
+        self.email = email
         self.history = history
         super().__init__()
 
@@ -49,7 +49,7 @@ class MenuWindow(QtWidgets.QMainWindow):
             self.stackWidget.removeWidget(widget)
 
         # setting up the windows class
-        self.homeWindow = home.HomeWindow()
+        self.homeWindow = home.HomeWindow(email=self.email)
         self.dailyWindow = daily.DailyWindow()
         self.weeklyWindow = weekly.WeeklyWindow()
         self.calandarWindow = calandar.CalanadarWindow()
