@@ -4,10 +4,14 @@ from PyQt5.QtGui import QFont
 from PyQt5.uic import loadUi
 from stack_bar import StackedBarGraph,data
 from circular_progress_bar import CircularProgress, get_angle, calculate_time_difference
+from config import get_hourly_details
+from serial_id import get_serial_number
+from parsher import categorize_app
 
 
 class HomeWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self,email):
+        self.email = email
         super().__init__()
 
         self.setGeometry(800, 800, 500, 500)
@@ -30,10 +34,19 @@ class HomeWindow(QtWidgets.QMainWindow):
         self.stack_bar_frame_layout = QtWidgets.QGridLayout(self.stack_bar_frame)
         self.circular_bar_frame_layout = QtWidgets.QVBoxLayout(self.circular_bar_frame)
 
+        init_dict= get_hourly_details(self.email,get_serial_number())
+        if init_dict is not None:
+            categorized_dict = categorize_app(init_dict)
+            print(categorized_dict)
+        else:
+            pass
+        #NOTE to add staakcbar be laoding here or fixing
+        
+        
         # Adding the StackedBarGraph widget to the stack_bar_frame
         self.stack_bar_graph = StackedBarGraph(self.stack_bar_frame)
         self.stack_bar_frame_layout.addWidget(self.stack_bar_graph)
-        self.stack_bar_graph.plotGraph(data=data)
+        self.stack_bar_graph.plotGraph(data=categorized_dict)
 
         # collecting params for iniitialzin ciruclar progressbar
         start_hour = 6
