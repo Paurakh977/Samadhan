@@ -16,15 +16,15 @@ class StackedBarGraph(QtWidgets.QWidget):
 
     def plotGraph(self, data):
         times = list(range(24))  # Fixed 24-hour range
-        social_networking = [data["social_networking"].get(hour, 0) for hour in times]
-        entertainment = [data["entertainment"].get(hour, 0) for hour in times]
-        productivity = [data["productivity"].get(hour, 0) for hour in times]
-        other = [data["other"].get(hour, 0) for hour in times]
+        social_networking = [data["Social Networking"].get(hour, 0) for hour in times]
+        entertainment = [data["Entertainment"].get(hour, 0) for hour in times]
+        productivity = [data["Productivity"].get(hour, 0) for hour in times]
+        other = [data["Others"].get(hour, 0) for hour in times]
 
-        total_social_networking = sum([ i for i in data["social_networking"].values()])
-        total_entertainment = sum([ i for i in data["entertainment"].values()])
-        total_productivity = sum([ i for i in data["productivity"].values()])
-        total_other = sum([ i for i in data["other"].values()])
+        total_social_networking = int(sum([ i for i in data["Social Networking"].values()]))
+        total_entertainment = int(sum([ i for i in data["Entertainment"].values()]))
+        total_productivity = int(sum([ i for i in data["Productivity"].values()]))
+        total_other = int(sum([ i for i in data["Others"].values()]))
 
         
         # Define gradient shades for each category
@@ -152,22 +152,22 @@ class StackedBarGraph(QtWidgets.QWidget):
         self.canvas.draw()
 
 data = {
-            "social_networking": {
+            "Social Networking": {
                 0: 5, 1: 10, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 15, 8: 8, 9: 5,
                 10: 0, 11: 5, 12: 2, 13: 25, 14: 3, 15: 10, 0: 6, 17: 10, 18: 8, 19: 10,
                 20: 5, 21: 7, 22: 5, 23: 0
             },
-            "entertainment": {
+            "Entertainment": {
                 0: 10, 1: 5, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 8, 8: 15, 9: 10,
                 10: 0, 11: 0, 12: 10, 0: 5, 14: 17, 15: 12, 7: 10, 17: 15, 18: 2, 19: 5,
                 20: 10, 21: 10, 22: 8, 23: 5
             },
-            "productivity": {
+            "Productivity": {
                 0: 15, 1: 8, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 15, 8: 10, 9: 10,
                 10: 8, 11: 10, 12: 0, 13: 2, 14: 10, 15: 10, 0: 15, 17: 13, 18: 3, 19: 8,
                 20: 15, 21: 10, 22: 12, 23: 10
             },
-            "other": {
+            "Others": {
                 0: 30, 1: 30, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 7, 8: 12, 9: 20,
                 10: 2, 11: 40, 12: 12, 13: 10, 0: 13, 15: 12, 0: 23, 17: 17, 18: 25, 19: 35,
                 20: 30, 21: 28, 22: 35, 23: 45
