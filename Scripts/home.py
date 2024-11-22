@@ -35,9 +35,10 @@ class HomeWindow(QtWidgets.QMainWindow):
         self.circular_bar_frame_layout = QtWidgets.QVBoxLayout(self.circular_bar_frame)
 
         init_dict= get_hourly_details(self.email,get_serial_number())
+        print(f"raw dict {init_dict} \n")
         if init_dict is not None:
             categorized_dict = categorize_app(init_dict)
-            print(categorized_dict)
+            
         else:
             pass
         #NOTE to add staakcbar be laoding here or fixing
