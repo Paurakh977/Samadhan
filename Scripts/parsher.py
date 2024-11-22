@@ -37,8 +37,8 @@ my_dict = {
 
 
 def filtering_data(
-    raw_prompt_dict: dict[str : list[int:float]],
-    categorized_prompt_dict: dict[str : list[str]],
+    raw_prompt_dict: dict[str, list[int]],
+    categorized_prompt_dict: dict[str, list[str]],
 ):
     data = {
         "Social Networking": {hour: 0 for hour in range(24)},
@@ -48,16 +48,21 @@ def filtering_data(
     }
 
     seconds_to_minutes = lambda seconds: round(seconds / 60, 2)
-    raw_prompt_dict = {
-        k: [v[0], seconds_to_minutes(v[1])] for k, v in raw_prompt_dict.items()
-    }
-    
-    for app, (hour, minutes) in raw_prompt_dict.items():
-    # Find which category the app belongs to in 'a'
-        for category, app_list in categorized_prompt_dict.items():
-            if app in app_list:
-                data[category][hour] += minutes
-                
+
+    for app, usage in raw_prompt_dict.items():
+        for hour, seconds in usage:
+            minutes = seconds_to_minutes(seconds)
+
+            categorized = False
+            for category, app_list in categorized_prompt_dict.items():
+                if app in app_list:
+                    data[category][hour] += minutes
+                    categorized = True
+                    break
+
+            if not categorized:
+                data["Others"][hour] += minutes
+
     return data
 
 
@@ -79,7 +84,6 @@ def categorize_app(
     parsed_data = json.loads(data)
 
     text_value = parsed_data["candidates"][0]["content"]["parts"][0]["text"]
-
     cleaned_text = (
         text_value.replace("app_categories =", "")
         .replace("json", "")
@@ -92,7 +96,14 @@ def categorize_app(
     cleaned_text = cleaned_text.replace("'", '"')
     try:
         my_dict = json.loads(cleaned_text)
+        print(f" categorized--> {my_dict} \n")
         return filtering_data(input_prompt_dict, my_dict)
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON: {e}")
         return None
+
+
+if __name__ == "__main__":
+    categorize_app(
+        my_dict, ["Social Networking", "Entertainment", "Productivity", "Others"]
+    )
