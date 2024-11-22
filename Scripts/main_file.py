@@ -7,18 +7,21 @@ from config import get_login_status
 class MyMainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         self.history = list()
-
         super().__init__()
 
         # Getting windows here
         self.login_window = login.LoginWindow()
         self.signup_window = signupp.SignupWindow()
-        self.menu_window = menu.MenuWindow(self.history)
-
+        
         status, name, email = get_login_status()
+
+        
         print(status, email)
+        
         if status:
-            self.get_menu(name, email)
+            self.menu_window = menu.MenuWindow(self.history,name,email)
+            self.get_menu(name,)
+            self.connections_for_menu_win()
         else:
             self.get_login_window()
 
@@ -31,6 +34,8 @@ class MyMainWindow(QtWidgets.QMainWindow):
         )
 
         # connections for the menu Window
+    def connections_for_menu_win(self):
+        
         self.menu_window.home_2.clicked.connect(self.get_home)
         self.menu_window.home_1.clicked.connect(self.get_home)
         self.menu_window.Daily_2.clicked.connect(self.get_daily)
@@ -59,9 +64,7 @@ class MyMainWindow(QtWidgets.QMainWindow):
             if radio.isChecked():
                 radio.setChecked(False)
 
-    def get_menu(self, name, email):
-        self.menu_window.username = name
-        self.menu_window.email = email
+    def get_menu(self, name):
         self.menu_window.show()
         self.menu_window.username_lbl.setText(name.split()[0])
         self.login_window.close()
