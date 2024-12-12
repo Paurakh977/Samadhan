@@ -40,7 +40,7 @@ class HomeWindow(QtWidgets.QMainWindow):
             categorized_dict = categorize_app(init_dict)
             
         else:
-            pass
+            categorized_dict=data
         #NOTE to add staakcbar be laoding here or fixing
         
         

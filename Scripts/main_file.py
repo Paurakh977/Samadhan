@@ -20,7 +20,7 @@ class MyMainWindow(QtWidgets.QMainWindow):
         
         if status:
             self.menu_window = menu.MenuWindow(self.history,name,email)
-            self.get_menu(name,)
+            self.get_menu(name)
             self.connections_for_menu_win()
         else:
             self.get_login_window()

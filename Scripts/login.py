@@ -104,7 +104,7 @@ class LoginWindow(QtWidgets.QMainWindow):
                 # browser_tracker.main()
                 self.close()
                 self.main_window = MyMainWindow()
-                self.main_window.get_menu(name=name, email=email)
+                self.main_window.get_menu(name=name)
             else:
                 show_message_box(
                     "User not Registered\nPlease Signup First",
