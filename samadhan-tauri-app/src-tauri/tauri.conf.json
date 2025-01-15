@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "samadhan-tauri-app",
+  "productName": "Samadhan",
   "version": "0.1.0",
-  "identifier": "com.samadhan-tauri-app.app",
+  "identifier": "com.Samadhan.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
