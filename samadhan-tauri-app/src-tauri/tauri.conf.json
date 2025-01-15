@@ -13,8 +13,10 @@
     "windows": [
       {
         "title": "Samadhan",
-        "width": 800,
+        "width": 1000,
         "height": 600,
+        "minWidth": 940,
+        "minHeight": 580,
         "center": true,
         "resizable": true,
         "decorations": true

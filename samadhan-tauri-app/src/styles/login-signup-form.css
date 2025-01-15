@@ -109,7 +109,7 @@ form {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding: 0rem 5rem;
+  padding: min(4rem, 5vh) min(4rem, 7vw);
   transition: all 0.2s 0.7s;
   overflow: hidden;
   grid-column: 1 / 2;
@@ -126,17 +126,17 @@ form.sign-in-form {
 }
 
 .title {
-  font-size: 2.2rem;
+  font-size: min(1.8rem, 3.2vh);
   color: #444;
-  margin-bottom: 10px;
+  margin-bottom: min(7px, 1vh);
 }
 
 .input-field {
-  max-width: 380px;
+  max-width: min(340px, 35vw);
   width: 100%;
   background-color: #f0f0f0;
-  margin: 10px 0;
-  height: 55px;
+  margin: min(7px, 1vh) 0;
+  height: min(45px, 6.5vh);
   border-radius: 55px;
   display: grid;
   grid-template-columns: 15% 85%;
@@ -151,10 +151,10 @@ form.sign-in-form {
 
 .input-field i {
   text-align: center;
-  line-height: 55px;
+  line-height: min(45px, 6.5vh);
   color: #acacac;
   transition: 0.5s;
-  font-size: 1.1rem;
+  font-size: min(0.95rem, 1.7vh);
 }
 
 .input-field input {
@@ -163,7 +163,7 @@ form.sign-in-form {
   border: none;
   line-height: 1;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: min(0.95rem, 1.7vh);
   color: #333;
 }
 
@@ -173,8 +173,8 @@ form.sign-in-form {
 }
 
 .btn {
-  width: 150px;
-  height: 49px;
+  width: min(130px, 16vw);
+  height: min(42px, 6vh);
   border: none;
   outline: none;
   border-radius: 49px;
@@ -185,6 +185,7 @@ form.sign-in-form {
   font-weight: 600;
   margin: 10px 0;
   transition: 0.5s;
+  font-size: min(0.8rem, 1.5vh);
 }
 
 .btn:hover {
@@ -195,10 +196,10 @@ form.sign-in-form {
   margin: 0;
   background: none;
   border: 2px solid #fff;
-  width: 130px;
-  height: 41px;
+  width: min(110px, 15vw);
+  height: min(35px, 5vh);
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: min(0.7rem, 1.4vh);
 }
 
 .btn.transparent:hover {
@@ -222,6 +223,7 @@ form.sign-in-form {
   justify-content: space-around;
   text-align: center;
   z-index: 7;
+  padding: min(2.5rem, 3.5vh) min(15%, 10vw) min(1.6rem, 2.6vh) min(10%, 7vw);
 }
 
 .left-panel {
@@ -243,12 +245,12 @@ form.sign-in-form {
 .panel h3 {
   font-weight: 600;
   line-height: 1;
-  font-size: 1.5rem;
+  font-size: min(1.3rem, 2.6vh);
 }
 
 .panel p {
-  font-size: 0.95rem;
-  padding: 0.7rem 0;
+  font-size: min(0.85rem, 1.5vh);
+  padding: min(0.5rem, 0.8vh) 0;
 }
 
 .image {
@@ -307,7 +309,7 @@ form.sign-in-form {
 .forgot-password a {
   color: #4f46e5;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: min(0.8rem, 1.5vh);
 }
 
 .forgot-password a:hover {
@@ -342,20 +344,195 @@ form.sign-in-form {
     transition-delay: 0.8s;
   }
   .panel h3 {
-    font-size: 1.2rem;
+    font-size: min(1.2rem, 2.5vh);
   }
   .panel p {
-    font-size: 0.7rem;
+    font-size: min(0.7rem, 1.5vh);
     padding: 0.5rem 0;
   }
   .btn.transparent {
-    width: 110px;
-    height: 35px;
-    font-size: 0.7rem;
+    width: min(110px, 15vw);
+    height: min(35px, 5vh);
+    font-size: min(0.7rem, 1.4vh);
   }
   .image {
     width: 200px;
     transition: transform 0.9s ease-in-out;
     transition-delay: 0.6s;
   }
+}
+
+/* Add these styles for social buttons */
+.social-buttons {
+  display: flex;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.social-btn {
+  width: min(115px, 14vw);
+  height: min(38px, 5.5vh);
+  border: 1px solid #f0f0f0;
+  border-radius: 25px;
+  cursor: pointer;
+  background-color: #ffffff;
+  color: #555;
+  font-weight: 400;
+  font-size: min(0.75rem, 1.4vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Sliding background effect */
+.social-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+/* Google button specific styles */
+.social-btn.google::before {
+  background: linear-gradient(45deg, #fbbc05, #ea4335);
+  opacity: 0.1;
+}
+
+/* Facebook button specific styles */
+.social-btn.facebook::before {
+  background: #1877F2;
+  opacity: 0.1;
+}
+
+/* Hover effects */
+.social-btn:hover::before {
+  left: 0;
+}
+
+.social-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Icon styles */
+.social-btn i {
+  font-size: min(1.1rem, 1.8vh);
+  transition: all 0.3s ease;
+}
+
+.social-btn.google i {
+  background: conic-gradient(
+    from -45deg,
+    #ea4335 110deg,
+    #4285f4 110deg 180deg,
+    #34a853 180deg 270deg,
+    #fbbc05 270deg
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: min(1.2rem, 2vh);
+  font-family: "Font Awesome 6 Brands";
+}
+
+.social-btn.facebook i {
+  color: #1877F2;
+}
+
+/* Text transition on hover */
+.social-btn span {
+  transition: all 0.3s ease;
+}
+
+.social-btn:hover span,
+.social-btn:hover i {
+  color: #333;
+}
+
+/* Add divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  width: min(320px, 33vw);
+}
+
+.divider .line {
+  flex: 1;
+  height: 1px;
+  background-color: #f0f0f0;
+}
+
+.divider span {
+  color: #888;
+  font-size: min(0.7rem, 1.3vh);
+  font-weight: 400;
+}
+
+/* Keep the hover state consistent */
+.social-btn.google:hover i {
+  background: conic-gradient(
+    from -45deg,
+    #ea4335 110deg,
+    #4285f4 110deg 180deg,
+    #34a853 180deg 270deg,
+    #fbbc05 270deg
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Add these styles for the password visibility toggle */
+.input-field.password-field {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  transition: color 0.3s ease;
+  z-index: 2;
+  width: 20px;
+  height: 20px;
+}
+
+/* Hide the default password reveal button in browsers */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* Adjust input padding for password fields */
+.input-field input[type="password"],
+.input-field input[type="text"] {
+  padding-right: 40px;
+}
+
+.password-toggle:hover {
+  color: #666;
+}
+
+.password-toggle i {
+  font-size: min(0.9rem, 1.6vh);
+  line-height: 1;
 }
