@@ -8,7 +8,11 @@ interface FormData {
   password: string;
 }
 
-const LoginSignupForm = () => {
+interface LoginSignupFormProps {
+  setShowSidebar: (show: boolean) => void;
+}
+
+const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -19,7 +23,9 @@ const LoginSignupForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    if (!isSignUp && formData.username.trim() && formData.password.trim()) {
+      setShowSidebar(true);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
