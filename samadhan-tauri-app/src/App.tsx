@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import LoginSignupForm from "./components/LoginSignupForm";
 import { LoadingAnimation } from "./components/LoadingAnimation";
 import "./styles/login-signup-form.css";
-import "./styles/loading-animation.css";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,14 +12,14 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen">
-      {isLoading ? (
-        <LoadingAnimation onComplete={handleLoadingComplete} />
-      ) : (
-        <div className="flex items-center justify-center min-h-screen">
+    <div className="min-h-screen bg-[#fafafa]">
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <LoadingAnimation onComplete={handleLoadingComplete} />
+        ) : (
           <LoginSignupForm />
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }
