@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
+
+.letter-s {
+  font-family: 'Inter', sans-serif;
+  transform-style: preserve-3d;
+  transform: perspective(1000px);
+  letter-spacing: -0.08em;
+}
+
+.fluid-fill {
+  transform-origin: bottom;
+}
+
+.wave {
+  transform-origin: 50% 50%;
+}
+
+.wave-1 {
+  animation: rotate 8s linear infinite;
+  border-radius: 45%;
+}
+
+.wave-2 {
+  animation: rotate 8s linear infinite reverse;
+  border-radius: 35%;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 
