@@ -117,7 +117,7 @@ const DailyActivityChart: React.FC = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex-1 min-h-[480px] mt-[60px] bg-white/80 backdrop-blur-sm rounded-[32px] shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] border border-gray-100/50 p-6"
+      className="flex-1 min-h-[480px] bg-white rounded-[28px] shadow-[0_12px_36px_-12px_rgba(0,0,0,0.06)] border border-[#f5f5f5] p-6"
     >
       <div className="flex flex-col h-full">
         <motion.div 

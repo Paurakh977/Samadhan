@@ -96,7 +96,7 @@ const ScreenTimeProgress: React.FC<ScreenTimeProgressProps> = ({
         duration: 0.6,
         ease: [0.22, 1, 0.36, 1],
       }}
-      className="relative w-[350px] h-auto min-h-[480px] mt-[60px] bg-white/80 backdrop-blur-sm rounded-[32px] shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] border border-gray-100/50 flex flex-col"
+      className="relative w-[350px] h-auto min-h-[480px] bg-white/80 backdrop-blur-sm rounded-[32px] shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] border border-gray-100/50 flex flex-col"
     >
       <motion.div 
         initial={{ opacity: 0 }}

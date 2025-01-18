@@ -5,6 +5,7 @@ import { LoadingAnimation } from "./components/LoadingAnimation";
 import Sidebar from "./components/Sidebar";
 import ScreenTimeProgress from "./components/ScreenTimeProgress";
 import DailyActivityChart from "./components/DailyActivityChart";
+import { Stats } from "./components/Stats";
 import "./styles/login-signup-form.css";
 
 function App() {
@@ -24,16 +25,19 @@ function App() {
           <div className="flex h-screen">
             <Sidebar />
             <div className="flex-1">
-              <div className="h-full flex pl-6 pt-16 pb-8 gap-6">
-                <ScreenTimeProgress
-                  startHour={3}
-                  startMinute={25}
-                  startPeriod="PM"
-                  endHour={1}
-                  endMinute={10}
-                  endPeriod="AM"
-                />
-                <DailyActivityChart />
+              <div className="h-full flex flex-col px-6 pt-6">
+                <Stats />
+                <div className="flex gap-6 mt-2 flex-1">
+                  <ScreenTimeProgress
+                    startHour={3}
+                    startMinute={25}
+                    startPeriod="PM"
+                    endHour={1}
+                    endMinute={10}
+                    endPeriod="AM"
+                  />
+                  <DailyActivityChart />
+                </div>
               </div>
             </div>
           </div>
