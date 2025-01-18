@@ -3,6 +3,7 @@ import { AnimatePresence } from "framer-motion";
 import LoginSignupForm from "./components/LoginSignupForm";
 import { LoadingAnimation } from "./components/LoadingAnimation";
 import Sidebar from "./components/Sidebar";
+import ScreenTimeProgress from "./components/ScreenTimeProgress";
 import "./styles/login-signup-form.css";
 
 function App() {
@@ -19,7 +20,21 @@ function App() {
         {isLoading ? (
           <LoadingAnimation onComplete={handleLoadingComplete} />
         ) : showSidebar ? (
-          <Sidebar />
+          <div className="flex h-screen">
+            <Sidebar />
+            <div className="flex-1">
+              <div className="h-full flex pl-6 pt-16 pb-8">
+                <ScreenTimeProgress
+                  startHour={3}
+                  startMinute={25}
+                  startPeriod="PM"
+                  endHour={1}
+                  endMinute={10}
+                  endPeriod="AM"
+                />
+              </div>
+            </div>
+          </div>
         ) : (
           <LoginSignupForm setShowSidebar={setShowSidebar} />
         )}
