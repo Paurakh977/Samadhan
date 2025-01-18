@@ -55,14 +55,23 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick, isExpan
   </motion.div>
 );
 
-const Sidebar = () => {
-  const [activeTab, setActiveTab] = React.useState('home');
+interface SidebarProps {
+  currentView?: string;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home' }) => {
+  const [activeTab, setActiveTab] = React.useState(currentView);
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [isLoaded, setIsLoaded] = React.useState(false);
 
   React.useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    window.dispatchEvent(new CustomEvent('viewChange', { detail: tab }));
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -199,7 +208,7 @@ const Sidebar = () => {
             </svg>}
             label="Home"
             active={activeTab === 'home'}
-            onClick={() => setActiveTab('home')}
+            onClick={() => handleTabChange('home')}
             isExpanded={isExpanded}
           />
           <NavItem
@@ -208,7 +217,7 @@ const Sidebar = () => {
             </svg>}
             label="Analytics"
             active={activeTab === 'analytics'}
-            onClick={() => setActiveTab('analytics')}
+            onClick={() => handleTabChange('analytics')}
             isExpanded={isExpanded}
           />
           <NavItem
