@@ -70,7 +70,6 @@ const ScreenTimeProgress: React.FC<ScreenTimeProgressProps> = ({
 
   const size = 300;
   const progressWidth = 30;
-  const margin = progressWidth / 2;
   const width = size - progressWidth;
   const height = size - progressWidth;
 
