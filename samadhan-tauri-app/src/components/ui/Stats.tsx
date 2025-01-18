@@ -1,5 +1,5 @@
 import { Clock, Smartphone, Layout, BrainCircuit, Zap } from 'lucide-react';
-import { formatNumber, formatTime } from '../lib/utils';
+import { formatNumber, formatTime } from '../../lib/utils';
 import { motion } from 'framer-motion';
 
 interface StatCardProps {

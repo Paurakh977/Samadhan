@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import LoginSignupForm from "./components/LoginSignupForm";
+import LoginSignupForm from "./components/auth/LoginSignupForm";
 import { LoadingAnimation } from "./components/LoadingAnimation";
-import Sidebar from "./components/Sidebar";
-import ScreenTimeProgress from "./components/ScreenTimeProgress";
-import DailyActivityChart from "./components/DailyActivityChart";
-import { Stats } from "./components/Stats";
+import Sidebar from "./components/ui/Sidebar";
+import ScreenTimeProgress from "./components/charts/ScreenTimeProgress";
+import DailyActivityChart from "./components/charts/DailyActivityChart";
+import { Stats } from "./components/ui/Stats";
 import "./styles/login-signup-form.css";
 
 function App() {

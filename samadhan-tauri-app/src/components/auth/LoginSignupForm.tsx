@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import '../styles/login-signup-form.css';
+import '../../styles/login-signup-form.css';
 
 interface FormData {
   username: string;
