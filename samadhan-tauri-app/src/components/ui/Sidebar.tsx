@@ -226,7 +226,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home' }) => {
             </svg>}
             label="Goals"
             active={activeTab === 'goals'}
-            onClick={() => setActiveTab('goals')}
+            onClick={() => handleTabChange('goals')}
             isExpanded={isExpanded}
           />
           <NavItem
