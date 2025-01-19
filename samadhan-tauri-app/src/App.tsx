@@ -8,6 +8,7 @@ import DailyActivityChart from "./components/charts/DailyActivityChart";
 import HorizontalChart from "./components/charts/HorizontalChart";
 import AppUsageLineChart from "./components/charts/AppUsageLineChart";
 import { Stats } from "./components/ui/Stats";
+import WeeklyUsageBarChart from "./components/charts/WeeklyUsageBarChart";
 import "./styles/login-signup-form.css";
 
 function App() {
@@ -34,6 +35,17 @@ function App() {
     }
   ];
 
+  // Sample data for weekly usage
+  const weeklyUsageData = [
+    { day: "Mon", hours: 6, minutes: 45 },
+    { day: "Tue", hours: 5, minutes: 30 },
+    { day: "Wed", hours: 7, minutes: 15 },
+    { day: "Thu", hours: 4, minutes: 50 },
+    { day: "Fri", hours: 6, minutes: 20 },
+    { day: "Sat", hours: 3, minutes: 45 },
+    { day: "Sun", hours: 5, minutes: 10 },
+  ];
+
   useEffect(() => {
     const handleViewChange = (e: CustomEvent) => {
       const newView = e.detail;
@@ -50,38 +62,58 @@ function App() {
   const renderContent = () => {
     if (currentView === 'analytics') {
       return (
-        <div className="h-full flex flex-col px-8 py-8 overflow-x-hidden">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-1">App Usage Analytics</h2>
-              <p className="text-sm text-gray-500">Track and analyze your application usage patterns</p>
+        <div className="h-screen overflow-y-auto bg-[#fafafa]">
+          {/* Header Section - Fixed height */}
+          <div className="px-8 py-6 bg-[#fafafa] sticky top-0 z-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-1">App Usage Analytics</h2>
+                <p className="text-sm text-gray-500">Track and analyze your application usage patterns</p>
+              </div>
+              <select className="w-full sm:w-auto bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-600 font-medium hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all">
+                <option value="lastweek">Last week</option>
+                <option value="lastmonth">Last month</option>
+                <option value="last3months">Last 3 months</option>
+                <option value="last6months">Last 6 months</option>
+              </select>
             </div>
-            <select className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-600 font-medium hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all">
-              <option value="lastweek">Last week</option>
-              <option value="lastmonth">Last month</option>
-              <option value="last3months">Last 3 months</option>
-              <option value="last6months">Last 6 months</option>
-            </select>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(300px,320px)_1fr] gap-6 flex-1 min-w-0 max-h-[calc(100vh-12rem)]">
-            <div className="bg-white rounded-2xl shadow-sm p-7 hover:shadow-md transition-all h-full overflow-hidden">
-              <div className="space-y-1 mb-8">
-                <h3 className="text-[15px] font-semibold text-gray-900">Top Applications</h3>
-                <p className="text-sm text-gray-500">Most used apps this week</p>
+          {/* Main Content - Scrollable */}
+          <div className="px-8 pb-8">
+            <div className="flex flex-row gap-6 min-h-[800px]">
+              {/* Horizontal Progress Bar - Fixed width */}
+              <div className="bg-white rounded-lg shadow-sm border border-zinc-100 w-[300px] p-6 h-fit sticky top-[120px]">
+                <div className="flex flex-col gap-1.5 mb-6">
+                  <h2 className="text-zinc-900 text-sm font-semibold">Screen Time</h2>
+                  <p className="text-zinc-500 text-xs font-medium">Today's screen time usage</p>
+                </div>
+                <HorizontalChart data={appUsageData} />
               </div>
-              <div className="h-[calc(100%-6rem)]">
-                <HorizontalChart />
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-2xl shadow-sm p-7 hover:shadow-md transition-all h-full overflow-hidden">
-              <div className="space-y-1 mb-8">
-                <h3 className="text-[15px] font-semibold text-gray-900">Usage Trends</h3>
-                <p className="text-sm text-gray-500">Daily app usage patterns</p>
-              </div>
-              <div className="h-[calc(100%-6rem)]">
-                <AppUsageLineChart data={appUsageData} />
+
+              {/* Charts Section */}
+              <div className="flex-1 flex flex-col gap-6">
+                {/* Bar Chart */}
+                <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-6">
+                  <div className="flex flex-col gap-1.5 mb-4">
+                    <h2 className="text-zinc-900 text-sm font-semibold">Daily Screen Time</h2>
+                    <p className="text-zinc-500 text-xs font-medium">Screen time usage for the past week</p>
+                  </div>
+                  <div className="h-[400px]">
+                    <WeeklyUsageBarChart data={weeklyUsageData} />
+                  </div>
+                </div>
+
+                {/* Line Chart */}
+                <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-6">
+                  <div className="flex flex-col gap-1.5 mb-4">
+                    <h2 className="text-zinc-900 text-sm font-semibold">Usage Trends</h2>
+                    <p className="text-zinc-500 text-xs font-medium">Screen time trends over the past month</p>
+                  </div>
+                  <div className="h-[500px]">
+                    <AppUsageLineChart data={appUsageData} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>

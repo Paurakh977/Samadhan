@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Line } from "react-chartjs-2";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -206,7 +206,6 @@ const AppUsageLineChart = ({ data }: AppUsageLineChartProps) => {
     <div className="relative h-full">
       <div className="absolute top-0 right-0 flex items-center gap-3">
         {data.map((app) => {
-          const isHidden = hiddenDatasets.includes(app.appName);
           return (
             <motion.button
               key={app.appName}
