@@ -11,6 +11,7 @@ import { Stats } from "./components/ui/Stats";
 import WeeklyUsageBarChart from "./components/charts/WeeklyUsageBarChart";
 import AppUsageDoughnutChart from "./components/charts/AppUsageDoughnutChart";
 import ActivityHeatmap from './components/charts/ActivityHeatmap';
+import ScreenTimeBarChart from './components/charts/ScreenTimeBarChart';
 import { heatmapData } from './data/heatmapData';
 import "./styles/login-signup-form.css";
 import "./styles/heatmap.css";
@@ -61,12 +62,14 @@ function App() {
   ];
 
   useEffect(() => {
-    const handleViewChange = (e: CustomEvent) => {
-      const newView = e.detail;
-      setCurrentView(newView);
+    const handleViewChange = (event: CustomEvent) => {
+      setCurrentView(event.detail);
     };
+
     window.addEventListener('viewChange', handleViewChange as EventListener);
-    return () => window.removeEventListener('viewChange', handleViewChange as EventListener);
+    return () => {
+      window.removeEventListener('viewChange', handleViewChange as EventListener);
+    };
   }, []);
 
   const handleLoadingComplete = () => {
@@ -174,6 +177,17 @@ function App() {
                   <div className="h-[350px]">
                     <AppUsageDoughnutChart data={appUsageBreakdown} />
                   </div>
+                </div>
+              </div>
+
+              {/* Screen Time Bar Chart */}
+              <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
+                <div className="flex flex-col gap-1.5 mb-6">
+                  <h2 className="text-zinc-900 text-sm font-semibold">Screen Time by Category</h2>
+                  <p className="text-zinc-500 text-xs font-medium">Screen time usage for the past week</p>
+                </div>
+                <div className="w-full h-[300px]">
+                  <ScreenTimeBarChart width={500} height={300} />
                 </div>
               </div>
             </div>
