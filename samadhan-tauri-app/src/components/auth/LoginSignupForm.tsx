@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import '../../styles/login-signup-form.css';
+import { invoke } from '@tauri-apps/api/core';
 
 interface FormData {
   username: string;
@@ -23,8 +24,13 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isSignUp && formData.username.trim() && formData.password.trim()) {
-      setShowSidebar(true);
+    try {
+      const phoneNumber = await invoke('handle_login', {
+        username: formData.username
+      });
+      alert(`User's phone number: ${phoneNumber}`);
+    } catch (error) {
+      alert(`Login failed: ${error}`);
     }
   };
 
