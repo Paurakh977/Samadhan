@@ -5,7 +5,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 interface FormData {
   username: string;
-  email?: string;
+  email: string;
   password: string;
 }
 
@@ -25,10 +25,21 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const phoneNumber = await invoke('handle_login', {
-        username: formData.username
+      if (isSignUp) {
+        // Handle signup
+        alert('Signup functionality coming soon!');
+        return;
+      }
+
+      // Handle login
+      const username = await invoke('handle_manual_login', {
+        email: formData.email,
+        password: formData.password
       });
-      alert(`User's phone number: ${phoneNumber}`);
+
+      // If login successful, show the main app
+      setShowSidebar(true);
+      
     } catch (error) {
       alert(`Login failed: ${error}`);
     }
@@ -70,13 +81,13 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
             <form className="sign-in-form" onSubmit={handleSubmit}>
               <h2 className="title">Sign In</h2>
               <div className="input-field">
-                <i className="fas fa-user"></i>
+                <i className="fas fa-envelope"></i>
                 <input
-                  type="text"
-                  name="username"
-                  placeholder="Username"
+                  type="email"
+                  name="email"
+                  placeholder="Email"
                   required
-                  value={formData.username}
+                  value={formData.email}
                   onChange={handleInputChange}
                 />
               </div>
