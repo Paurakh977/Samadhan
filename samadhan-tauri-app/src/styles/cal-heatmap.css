@@ -1,0 +1,46 @@
+.cal-heatmap-container {
+  width: 100%;
+  height: auto;
+}
+
+.cal-heatmap-container rect.highlight {
+  stroke: #444;
+  stroke-width: 1;
+}
+
+.cal-heatmap-container .graph-label {
+  fill: #666;
+  font-size: 12px;
+}
+
+.cal-heatmap-container .graph-rect {
+  fill: #ebedf0;
+  shape-rendering: crispedges;
+}
+
+.cal-heatmap-container .graph-rect:hover {
+  stroke: rgba(0, 0, 0, 0.1);
+  stroke-width: 1px;
+}
+
+.cal-heatmap-container .domain-background {
+  fill: none;
+  shape-rendering: crispedges;
+}
+
+.cal-heatmap-container .q0 { fill: #ebedf0; }
+.cal-heatmap-container .q1 { fill: #0E4429; }
+.cal-heatmap-container .q2 { fill: #006D32; }
+.cal-heatmap-container .q3 { fill: #26A641; }
+.cal-heatmap-container .q4 { fill: #39D353; }
+
+.cal-heatmap-container .subdomain-text {
+  font-size: 10px;
+  pointer-events: none;
+  fill: #aaa;
+}
+
+.cal-heatmap-container .domain-text {
+  font-size: 12px;
+  fill: #666;
+} 

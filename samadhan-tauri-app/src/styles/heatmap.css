@@ -1,0 +1,110 @@
+.activity-heatmap {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.activity-heatmap svg {
+  overflow: visible;
+}
+
+.activity-heatmap rect {
+  transform-origin: center;
+  transition: transform 0.2s ease-out;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: plotBlock 0.4s ease-out forwards;
+}
+
+.activity-heatmap rect:hover {
+  transform: scale(1.15);
+}
+
+/* Sequential animation for each block */
+.activity-heatmap rect:nth-child(1) { animation-delay: 0ms; }
+.activity-heatmap rect:nth-child(2) { animation-delay: 50ms; }
+.activity-heatmap rect:nth-child(3) { animation-delay: 100ms; }
+.activity-heatmap rect:nth-child(4) { animation-delay: 150ms; }
+.activity-heatmap rect:nth-child(5) { animation-delay: 200ms; }
+.activity-heatmap rect:nth-child(6) { animation-delay: 250ms; }
+.activity-heatmap rect:nth-child(7) { animation-delay: 300ms; }
+.activity-heatmap rect:nth-child(8) { animation-delay: 350ms; }
+.activity-heatmap rect:nth-child(9) { animation-delay: 400ms; }
+.activity-heatmap rect:nth-child(10) { animation-delay: 450ms; }
+.activity-heatmap rect:nth-child(11) { animation-delay: 500ms; }
+.activity-heatmap rect:nth-child(12) { animation-delay: 550ms; }
+.activity-heatmap rect:nth-child(13) { animation-delay: 600ms; }
+.activity-heatmap rect:nth-child(14) { animation-delay: 650ms; }
+.activity-heatmap rect:nth-child(15) { animation-delay: 700ms; }
+.activity-heatmap rect:nth-child(n+16) { animation-delay: 750ms; }
+
+.activity-heatmap text {
+  font-size: 12px;
+  fill: #666;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.activity-heatmap .month-label {
+  font-size: 12px;
+  fill: #666;
+  font-weight: 500;
+}
+
+.activity-heatmap .week-label {
+  font-size: 10px;
+  fill: #999;
+}
+
+/* Optimize text rendering */
+.activity-heatmap text,
+.activity-heatmap .month-label,
+.activity-heatmap .week-label {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.activity-heatmap .ch-domain-text {
+  font-size: 12px;
+  fill: #57606a;
+  font-weight: 500;
+}
+
+.activity-heatmap .ch-subdomain-text {
+  font-size: 10px;
+  fill: #57606a;
+}
+
+.activity-heatmap .ch-tooltip {
+  background: #ffffff;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 6px;
+  box-shadow: 0 1px 0 rgba(27, 31, 35, 0.04);
+  color: #24292e;
+  font-size: 12px;
+  padding: 5px 15px;
+  text-align: center;
+}
+
+.activity-heatmap rect.highlight {
+  stroke: rgba(27, 31, 35, 0.15);
+  stroke-width: 1px;
+}
+
+@keyframes plotBlock {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+} 

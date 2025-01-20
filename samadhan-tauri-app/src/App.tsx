@@ -10,7 +10,11 @@ import AppUsageLineChart from "./components/charts/AppUsageLineChart";
 import { Stats } from "./components/ui/Stats";
 import WeeklyUsageBarChart from "./components/charts/WeeklyUsageBarChart";
 import AppUsageDoughnutChart from "./components/charts/AppUsageDoughnutChart";
+import ActivityHeatmap from './components/charts/ActivityHeatmap';
+import { heatmapData } from './data/heatmapData';
 import "./styles/login-signup-form.css";
+import "./styles/heatmap.css";
+import "./styles/cal-heatmap.css";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -139,7 +143,7 @@ function App() {
       return (
         <div className="h-screen flex flex-col bg-[#fafafa]">
           {/* Header */}
-          <div className="px-8 py-6 bg-[#fafafa] border-b border-zinc-100">
+          <div className="px-4 sm:px-8 py-6 bg-[#fafafa] border-b border-zinc-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">Goals & Progress</h2>
@@ -149,15 +153,25 @@ function App() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="px-8 py-6">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+            <div className="space-y-6 max-w-[1800px] mx-auto">
+              {/* Activity Heatmap - Full Width */}
+              <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
+                <div className="flex flex-col gap-1.5 mb-6">
+                  <h2 className="text-zinc-900 text-sm font-semibold">Activity Contributions</h2>
+                  <p className="text-zinc-500 text-xs font-medium">Your daily app usage activity over the past year</p>
+                </div>
+                <ActivityHeatmap data={heatmapData} />
+              </div>
+
+              {/* App Usage Distribution */}
               <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
                   <div className="flex flex-col gap-1.5 mb-4">
                     <h2 className="text-zinc-900 text-sm font-semibold">App Usage Distribution</h2>
                     <p className="text-zinc-500 text-xs font-medium">Your app usage breakdown</p>
                   </div>
-                  <div className="h-[400px]">
+                  <div className="h-[350px]">
                     <AppUsageDoughnutChart data={appUsageBreakdown} />
                   </div>
                 </div>
@@ -191,9 +205,11 @@ function App() {
         {isLoading ? (
           <LoadingAnimation onComplete={handleLoadingComplete} />
         ) : showSidebar ? (
-          <div className="flex h-screen">
-            <Sidebar currentView={currentView} />
-            <div className="flex-1 overflow-hidden">
+          <div className="flex h-screen overflow-hidden">
+            <div className="flex-shrink-0">
+              <Sidebar currentView={currentView} />
+            </div>
+            <div className="flex-1 min-w-0">
               {renderContent()}
             </div>
           </div>
