@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
     
+    # Google OAuth settings
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+    
     class Config:
         env_file = ".env"
         case_sensitive = True

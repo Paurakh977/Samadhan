@@ -6,6 +6,7 @@ use reqwest::Client;
 use tokio;
 use winreg::enums::*;
 use winreg::RegKey;
+use serde_json;
 
 #[derive(Debug, Deserialize)]
 struct TokenResponse {
@@ -74,9 +75,37 @@ async fn handle_manual_login(email: String, password: String) -> Result<String, 
     }
 }
 
+#[tauri::command]
+async fn handle_google_login() -> Result<String, String> {
+    let serial_id = get_serial_number().map_err(|e| e.to_string())?;
+    
+    let client = reqwest::Client::new();
+    let response = client
+        .post("http://localhost:5000/api/v1/auth/google-login")
+        .query(&[("serial_id", &serial_id)])
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if response.status().is_success() {
+        let data: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
+        if let Some(username) = data.get("username").and_then(|v| v.as_str()) {
+            Ok(username.to_string())
+        } else {
+            Err("Username not found in response".to_string())
+        }
+    } else {
+        let error_text = response.text().await.map_err(|e| e.to_string())?;
+        Err(format!("Login failed: {}", error_text))
+    }
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![handle_manual_login])
+        .invoke_handler(tauri::generate_handler![
+            handle_manual_login,
+            handle_google_login
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -16,6 +16,7 @@ interface LoginSignupFormProps {
 const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [formData, setFormData] = useState<FormData>({
     username: '',
     email: '',
@@ -24,10 +25,12 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(''); // Clear any previous errors
+    
     try {
       if (isSignUp) {
         // Handle signup
-        alert('Signup functionality coming soon!');
+        setErrorMessage('Signup functionality coming soon!');
         return;
       }
 
@@ -40,14 +43,20 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
       // If login successful, show the main app
       setShowSidebar(true);
       
-    } catch (error) {
-      alert(`Login failed: ${error}`);
+    } catch (error: any) {
+      // Extract the error detail from the FastAPI error response
+      const errorDetail = error.toString().includes("Incorrect email or password") 
+        ? "Incorrect email or password"
+        : "Login failed. Please try again.";
+      
+      setErrorMessage(errorDetail);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrorMessage(''); // Clear error when user types
   };
 
   const togglePasswordVisibility = () => {
@@ -57,11 +66,33 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
   const handleModeSwitch = (mode: boolean) => {
     setIsSignUp(mode);
     setShowPassword(false);
+    setErrorMessage(''); // Clear error when switching modes
     setFormData({
       username: '',
       email: '',
       password: '',
     });
+  };
+
+  const handleGoogleLogin = async () => {
+    setErrorMessage(''); // Clear any previous errors
+    try {
+      const username = await invoke('handle_google_login');
+      if (username) {
+        setShowSidebar(true);
+      }
+    } catch (error: any) {
+      console.log("Google Login Error:", error); // This will show in browser's console
+      
+      // Show user-friendly messages based on error type
+      if (error.toString().includes("USER_NOT_FOUND")) {
+        setErrorMessage("This Google account is not registered. Please sign up first.");
+      } else if (error.toString().includes("Failed to authenticate")) {
+        setErrorMessage("Google authentication failed. Please try again.");
+      } else {
+        setErrorMessage("Login failed. Please try again later. Id not registered");
+      }
+    }
   };
 
   return (
@@ -80,6 +111,15 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
             {/* Sign In Form */}
             <form className="sign-in-form" onSubmit={handleSubmit}>
               <h2 className="title">Sign In</h2>
+              {errorMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="error-message"
+                >
+                  {errorMessage}
+                </motion.div>
+              )}
               <div className="input-field">
                 <i className="fas fa-envelope"></i>
                 <input
@@ -121,7 +161,11 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
                 <div className="line"></div>
               </div>
               <div className="social-buttons">
-                <button type="button" className="social-btn google">
+                <button 
+                  type="button" 
+                  className="social-btn google"
+                  onClick={handleGoogleLogin}
+                >
                   <i className="fab fa-google"></i>
                   <span>Google</span>
                 </button>
@@ -135,6 +179,15 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
             {/* Sign Up Form */}
             <form className="sign-up-form" onSubmit={handleSubmit}>
               <h2 className="title">Create Account</h2>
+              {errorMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="error-message"
+                >
+                  {errorMessage}
+                </motion.div>
+              )}
               <div className="input-field">
                 <i className="fas fa-user"></i>
                 <input
@@ -184,7 +237,11 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
                 <div className="line"></div>
               </div>
               <div className="social-buttons">
-                <button type="button" className="social-btn google">
+                <button 
+                  type="button" 
+                  className="social-btn google"
+                  onClick={handleGoogleLogin}
+                >
                   <i className="fab fa-google"></i>
                   <span>Google</span>
                 </button>

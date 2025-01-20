@@ -16,4 +16,7 @@ class User(Base):
     serial_id = Column(String(256))
 
     def __repr__(self):
-        return f"<User {self.username}>" 
+        return f"<User {self.username}>"
+
+    class Config:
+        orm_mode = True 
