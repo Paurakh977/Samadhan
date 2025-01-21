@@ -15,65 +15,79 @@ interface GoogleLoginResponse {
 }
 
 interface FormData {
-  username: string;
   email: string;
   password: string;
-}
-
-interface LoginResponse {
-  success: boolean;
-  email: string;
   username: string;
 }
 
 interface LoginSignupFormProps {
-  setShowSidebar: (show: boolean) => void;
   setUserEmail: (email: string) => void;
   setUsername: (username: string) => void;
+  setShowSidebar: (show: boolean) => void;
 }
 
-const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUserEmail, setUsername }) => {
+const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setUserEmail, setUsername, setShowSidebar }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    username: '',
     email: '',
     password: '',
+    username: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [messageType, setMessageType] = useState<'success' | 'error'>('error');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
-    
-    setIsLoading(true);
     setErrorMessage('');
 
     try {
       if (isSignUp) {
-        alert('Signup functionality coming soon!');
-        setIsLoading(false);
-        return;
-      }
-
-      const response = await invoke<ManualLoginResponse>('handle_manual_login', {
-        email: formData.email,
-        password: formData.password
-      });
-
-      if (response.success) {
-        setShowSidebar(true);
-        setUserEmail(response.email);
-        setUsername(response.username);
+        // Handle signup
+        await invoke('handle_manual_signup', {
+          email: formData.email,
+          password: formData.password,
+          username: formData.username
+        });
+        setMessageType('success');
+        setErrorMessage('Signup successful! Please login to continue.');
+        setTimeout(() => {
+          handleModeSwitch(false); // Switch to login mode after 2 seconds
+        }, 2000);
       } else {
-        setErrorMessage('Login failed. Please check your credentials.');
+        // Handle login
+        const serial_id = await invoke<string>('get_serial_number');
+        const response = await invoke<ManualLoginResponse>('handle_manual_login', {
+          email: formData.email,
+          password: formData.password,
+          serial_id
+        });
+        
+        if (response.success) {
+          setUserEmail(response.email);
+          setUsername(response.username);
+          setShowSidebar(true); // Immediately show sidebar on success, no delay
+        }
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setErrorMessage(typeof error === 'string' ? error : 'Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+      console.error('Error:', error);
+      setMessageType('error');
+      
+      if (typeof error === 'object' && error !== null) {
+        const errorDetail = (error as any).detail;
+        if (errorDetail === 'LOGIN_FAILED') {
+          setErrorMessage('Incorrect email or password. Please try again.');
+        } else if (errorDetail === 'Incorrect email or password') {
+          setErrorMessage('Incorrect email or password. Please try again.');
+        } else if (errorDetail === 'Email already registered') {
+          setErrorMessage('This email is already registered. Please try logging in instead.');
+        } else {
+          setErrorMessage('An error occurred. Please try again later.');
+        }
+      } else {
+        setErrorMessage('An error occurred. Please try again later.');
+      }
     }
   };
 
@@ -90,33 +104,78 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUs
   const handleModeSwitch = (mode: boolean) => {
     setIsSignUp(mode);
     setShowPassword(false);
-    setErrorMessage(''); // Clear error when switching modes
+    setErrorMessage('');
     setFormData({
-      username: '',
       email: '',
       password: '',
+      username: ''
     });
   };
 
   const handleGoogleLogin = async () => {
     try {
-      // First get the serial number
-      const serialId = await invoke<string>('get_serial_number');
-      console.log('Got serialId:', serialId); // Debug log
-      
-      // Then make the login request with the correct parameter name
+      const serial_id = await invoke<string>('get_serial_number');
       const response = await invoke<GoogleLoginResponse>('handle_google_login', { 
-        serialId // Use serialId to match the Rust function parameter
+        serialId: serial_id
       });
       
       if (response.email) {
-        setShowSidebar(true);
         setUserEmail(response.email);
         setUsername(response.username || '');
+        setShowSidebar(true);
       }
     } catch (error) {
       console.error('Google login error:', error);
-      setErrorMessage(typeof error === 'string' ? error : 'Login failed. Please try again.');
+      setMessageType('error');
+      
+      if (typeof error === 'object' && error !== null) {
+        const errorDetail = (error as any).detail;
+        if (errorDetail === 'GOOGLE_USER_NOT_FOUND') {
+          setErrorMessage('No account found with this Google account. Please sign up first.');
+        } else {
+          setErrorMessage('Failed to login with Google. Please try again.');
+        }
+      } else {
+        setErrorMessage('Failed to login with Google. Please try again.');
+      }
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      const serial_id = await invoke<string>('get_serial_number');
+      const response = await invoke<GoogleLoginResponse>('handle_google_signup', { 
+        serialId: serial_id
+      });
+      
+      if (response.email) {
+        setMessageType('success');
+        setUserEmail(response.email);
+        setUsername(response.username || '');
+        setShowSidebar(true);
+      }
+    } catch (error) {
+      console.error('Google signup error:', error);
+      setMessageType('error');
+      
+      if (typeof error === 'object' && error !== null) {
+        const errorDetail = (error as any).detail;
+        if (errorDetail === 'GOOGLE_USER_EXISTS') {
+          setErrorMessage('An account with this Google email already exists. Please login instead.');
+        } else {
+          setErrorMessage('Failed to sign up with Google. Please try again.');
+        }
+      } else {
+        setErrorMessage('Failed to sign up with Google. Please try again.');
+      }
+    }
+  };
+
+  const handleGoogleButtonClick = () => {
+    if (isSignUp) {
+      handleGoogleSignup();
+    } else {
+      handleGoogleLogin();
     }
   };
 
@@ -140,7 +199,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUs
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="error-message"
+                  className={`message-box ${messageType === 'success' ? 'success-message' : 'error-message'}`}
                 >
                   {errorMessage}
                 </motion.div>
@@ -179,7 +238,9 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUs
               <div className="forgot-password">
                 <a href="#">Forgot Password?</a>
               </div>
-              <button type="submit" className="btn">Login</button>
+              <button type="submit" className="btn">
+                {isSignUp ? 'Sign Up' : 'Login'}
+              </button>
               <div className="divider">
                 <div className="line"></div>
                 <span>or continue with</span>
@@ -189,7 +250,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUs
                 <button 
                   type="button" 
                   className="social-btn google"
-                  onClick={handleGoogleLogin}
+                  onClick={handleGoogleButtonClick}
                 >
                   <i className="fab fa-google"></i>
                   <span>Google</span>
@@ -208,7 +269,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUs
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="error-message"
+                  className={`message-box ${messageType === 'success' ? 'success-message' : 'error-message'}`}
                 >
                   {errorMessage}
                 </motion.div>
@@ -218,7 +279,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUs
                 <input
                   type="text"
                   name="username"
-                  placeholder="Username"
+                  placeholder="Full Name"
                   required
                   value={formData.username}
                   onChange={handleInputChange}
@@ -255,7 +316,9 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUs
                   <i className={`far ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                 </button>
               </div>
-              <button type="submit" className="btn">Sign Up</button>
+              <button type="submit" className="btn">
+                {isSignUp ? 'Sign Up' : 'Login'}
+              </button>
               <div className="divider">
                 <div className="line"></div>
                 <span>or continue with</span>
@@ -265,7 +328,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUs
                 <button 
                   type="button" 
                   className="social-btn google"
-                  onClick={handleGoogleLogin}
+                  onClick={handleGoogleButtonClick}
                 >
                   <i className="fab fa-google"></i>
                   <span>Google</span>

@@ -1,11 +1,11 @@
 from datetime import timedelta
 from typing import Any, Dict
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import bcrypt
 from app.core.security import create_access_token, verify_password
-from app.core.config import settings
+from app.core.config import settings, Settings
 from app.db.database import get_db
 from app.models.user import User
 from app.schemas.token import Token
@@ -25,6 +25,14 @@ from dotenv import load_dotenv
 # Load environment variables from the correct .env file
 env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))), '.env')
 load_dotenv(env_path)
+
+settings = Settings()
+db_config = {
+    'host': settings.DB_HOST,
+    'user': settings.DB_USER,
+    'password': settings.DB_PASSWORD,
+    'database': settings.DB_NAME
+}
 
 router = APIRouter()
 
@@ -49,83 +57,91 @@ def check_password(stored_password: str, provided_password: str) -> bool:
         return False
 
 @router.post("/manual-login")
-def manual_login(
-    email: str,
-    password: str,
-    serial_id: str,
-    db: Session = Depends(get_db)
+async def manual_login(
+    email: str = Query(...),
+    password: str = Query(...),
+    serial_id: str = Query(...)
 ) -> Dict[str, Any]:
     """Manual login endpoint"""
-    print(f"Login attempt - Email: {email}, Password: {password}")
-    
-    # First check if user exists with email and password
-    hashed_password = hash_password(password)
-    user = db.query(User).filter(
-        User.email == email,
-        User.password == hashed_password
-    ).first()
+    try:
+        # Connect to database
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
 
-    if not user:
-        print("User not found")
+        # First check if user exists with email
+        cursor.execute(
+            "SELECT * FROM user_info_manual WHERE email = %s",
+            (email,)
+        )
+        user = cursor.fetchone()
+
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail="Incorrect email or password"
+            )
+
+        # Verify password
+        if not check_password(user['password'], password):
+            raise HTTPException(
+                status_code=401,
+                detail="Incorrect email or password"
+            )
+
+        # Check if device exists
+        cursor.execute(
+            "SELECT * FROM user_info_manual WHERE email = %s AND serial_id = %s",
+            (email, serial_id)
+        )
+        device = cursor.fetchone()
+
+        if device:
+            # Update login status for this device
+            cursor.execute(
+                "UPDATE user_info_manual SET logged_in_status = 1 WHERE email = %s AND serial_id = %s",
+                (email, serial_id)
+            )
+            # Log out other devices
+            cursor.execute(
+                "UPDATE user_info_manual SET logged_in_status = 0 WHERE email = %s AND serial_id != %s",
+                (email, serial_id)
+            )
+        else:
+            # Add new device for this user
+            cursor.execute(
+                """
+                INSERT INTO user_info_manual 
+                (email, password, username, serial_id, logged_in_status) 
+                VALUES (%s, %s, %s, %s, 1)
+                """,
+                (email, user['password'], user['username'], serial_id)
+            )
+            # Log out other devices
+            cursor.execute(
+                "UPDATE user_info_manual SET logged_in_status = 0 WHERE email = %s AND serial_id != %s",
+                (email, serial_id)
+            )
+
+        conn.commit()
+        return {
+            "success": True,
+            "email": user['email'],
+            "username": user['username']
+        }
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logging.error(f"Error in manual login: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            status_code=500,
+            detail=f"Login failed: {str(e)}"
         )
-
-    print(f"Found user: {user.username}")
-
-    # Check if user exists with this serial_id
-    user_with_serial = db.query(User).filter(
-        User.email == email,
-        User.serial_id == serial_id
-    ).first()
-
-    if user_with_serial:
-        # Update logged_in status for this device
-        db.query(User).filter(
-            User.email == email,
-            User.serial_id == serial_id
-        ).update({"logged_in_status": True})
-        
-        # Set logged_out for other devices
-        db.query(User).filter(
-            User.email == email,
-            User.serial_id != serial_id
-        ).update({"logged_in_status": False})
-        
-        db.commit()
-        
-        return {
-            "success": True,
-            "username": user.username,
-            "email": user.email
-        }
-    else:
-        # Create new entry for this device
-        new_device = User(
-            username=user.username,
-            phnumber=user.phnumber,
-            email=user.email,
-            password=user.password,
-            radio_button=user.radio_button,
-            serial_id=serial_id,
-            logged_in_status=True
-        )
-        db.add(new_device)
-        
-        # Set logged_out for other devices
-        db.query(User).filter(
-            User.email == email,
-            User.serial_id != serial_id
-        ).update({"logged_in_status": False})
-
-        db.commit()
-        
-        return {
-            "success": True,
-            "username": user.username,
-            "email": user.email
-        }
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
 
 @router.post("/login", response_model=Token)
 def login(
@@ -186,7 +202,7 @@ async def google_login(
     serial_id: str,
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
-    """Google OAuth login endpoint"""
+    """Google OAuth login endpoint - Only for existing users"""
     try:
         # Load credentials from the correct .env file
         client_id = os.getenv("GOOGLE_CLIENT_ID")
@@ -235,12 +251,7 @@ async def google_login(
             logging.info(f"Google login attempt - Email: {email}, Name: {name}")
 
             # Connect to database
-            conn = mysql.connector.connect(
-                host=settings.DB_HOST,
-                user=settings.DB_USER,
-                password=settings.DB_PASSWORD,
-                database=settings.DB_NAME
-            )
+            conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor(dictionary=True)
 
             try:
@@ -251,9 +262,14 @@ async def google_login(
                 )
                 user = cursor.fetchone()
 
-                if user:
-                    logging.info(f"Found existing user: {email}")
-                    # Check if this device exists for the user
+                if not user:
+                    # User doesn't exist - they need to sign up first
+                    raise HTTPException(
+                        status_code=401,
+                        detail="GOOGLE_USER_NOT_FOUND"
+                    )
+
+                # User exists, handle device login
                     cursor.execute(
                         "SELECT * FROM user_info_google WHERE email = %s AND serial_id = %s",
                         (email, serial_id)
@@ -261,63 +277,45 @@ async def google_login(
                     device = cursor.fetchone()
 
                     if device:
-                        logging.info(f"Device found for user {email}: {serial_id}")
                         # Update login status for this device
                         cursor.execute(
                             "UPDATE user_info_google SET logged_in_status = 1 WHERE email = %s AND serial_id = %s",
                             (email, serial_id)
                         )
-                        # Log out other devices
-                        cursor.execute(
-                            "UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s",
-                            (email, serial_id)
-                        )
-                        
-                        # Get username
-                        cursor.execute(
-                            "SELECT username FROM user_info_google WHERE email = %s",
-                            (email,)
-                        )
-                        record = cursor.fetchone()
-                        if record:
-                            name = record['username']
                     else:
-                        logging.info(f"Adding new device for user {email}: {serial_id}")
                         # Add new device for existing user
                         cursor.execute(
                             "INSERT INTO user_info_google (username, email, serial_id, logged_in_status) VALUES (%s, %s, %s, 1)",
-                            (name, email, serial_id)
+                        (user['username'], email, serial_id)
                         )
+
                         # Log out other devices
                         cursor.execute(
                             "UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s AND serial_id != %s",
                             (email, serial_id)
-                        )
-                    
-                    conn.commit()
-                    return {
-                        "success": True,
-                        "username": name,
-                        "email": email
-                    }
-                else:
-                    logging.warning(f"No account found for email: {email}")
-                    conn.close()
-                    raise HTTPException(
-                        status_code=401,
-                        detail="USER_NOT_FOUND"
                     )
+
+                conn.commit()
+                return {
+                    "success": True,
+                    "username": user['username'],
+                    "email": email
+                }
 
             finally:
                 cursor.close()
                 conn.close()
 
+        except HTTPException as e:
+            raise e
         except Exception as e:
             logging.error(f"Error getting user info from Google: {str(e)}")
             raise HTTPException(status_code=400, detail="Failed to get user info")
 
     except Exception as e:
         logging.error(f"Google login error: {str(e)}")
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=400, detail="LOGIN_FAILED")
 
 @router.post("/logout")
@@ -413,4 +411,155 @@ async def check_login_status(serial_id: str) -> Dict[str, Any]:
         )
     finally:
         cursor.close()
-        conn.close() 
+        conn.close()
+
+@router.post("/manual-signup")
+async def manual_signup(
+    email: str = Query(...),
+    password: str = Query(...),
+    username: str = Query(...),
+    serial_id: str = Query(...)
+):
+    try:
+        # Connect to database
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Check if email already exists
+        cursor.execute("SELECT * FROM user_info_manual WHERE email = %s", (email,))
+        if cursor.fetchone():
+            raise HTTPException(
+                status_code=400,
+                detail="Email already registered"
+            )
+
+        # Hash password
+        hashed_password = hash_password(password)
+
+        # Insert new user
+        cursor.execute(
+            """
+            INSERT INTO user_info_manual 
+            (email, password, username, serial_id, logged_in_status) 
+            VALUES (%s, %s, %s, %s, 0)
+            """,
+            (email, hashed_password, username, serial_id)
+        )
+        conn.commit()
+
+        return {"success": True, "message": "User registered successfully"}
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logging.error(f"Error in manual signup: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
+
+@router.post("/google-signup")
+async def google_signup(
+    serial_id: str,
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Google OAuth signup endpoint - Only for new users"""
+    try:
+        # Load credentials from the correct .env file
+        client_id = os.getenv("GOOGLE_CLIENT_ID")
+        client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+        
+        if not client_id or not client_secret:
+            logging.error("Missing Google OAuth credentials in environment variables")
+            raise HTTPException(
+                status_code=400,
+                detail="Authentication configuration error"
+            )
+            
+        creds_data = {
+            "installed": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": ["http://localhost"]
+            }
+        }
+        
+        scopes = [
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "openid",
+        ]
+
+        try:
+            flow = InstalledAppFlow.from_client_config(creds_data, scopes)
+            creds = flow.run_local_server(port=0)
+        except Exception as e:
+            logging.error(f"Google OAuth Flow Error: {str(e)}")
+            raise HTTPException(status_code=400, detail="Failed to authenticate with Google")
+
+        try:
+            service = build("people", "v1", credentials=creds)
+            profile = service.people().get(
+                resourceName="people/me",
+                personFields="names,emailAddresses"
+            ).execute()
+
+            name = profile.get("names", [{}])[0].get("displayName", "N/A")
+            email = profile.get("emailAddresses", [{}])[0].get("value", "N/A")
+            
+            logging.info(f"Google signup attempt - Email: {email}, Name: {name}")
+
+            # Connect to database
+            conn = mysql.connector.connect(**db_config)
+            cursor = conn.cursor(dictionary=True)
+
+            try:
+                # Check if user already exists
+                cursor.execute(
+                    "SELECT * FROM user_info_google WHERE email = %s",
+                    (email,)
+                )
+                user = cursor.fetchone()
+
+                if user:
+                    # User already exists - they should login instead
+                    raise HTTPException(
+                        status_code=400,
+                        detail="GOOGLE_USER_EXISTS"
+                    )
+
+                # Create new user with active login status
+                cursor.execute(
+                    "INSERT INTO user_info_google (username, email, serial_id, logged_in_status) VALUES (%s, %s, %s, 1)",
+                    (name, email, serial_id)
+                )
+                
+                conn.commit()
+                return {
+                    "success": True,
+                    "username": name,
+                    "email": email
+                }
+
+            finally:
+                cursor.close()
+                conn.close()
+
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            logging.error(f"Error getting user info from Google: {str(e)}")
+            raise HTTPException(status_code=400, detail="Failed to get user info")
+
+    except Exception as e:
+        logging.error(f"Google signup error: {str(e)}")
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail="SIGNUP_FAILED") 
