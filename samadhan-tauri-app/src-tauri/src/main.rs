@@ -46,6 +46,13 @@ struct SignupResponse {
     message: String
 }
 
+#[derive(Debug, Serialize)]
+struct ActivityData {
+    success: bool,
+    data: Option<serde_json::Value>,
+    error: Option<String>
+}
+
 #[tauri::command]
 fn get_serial_number() -> Result<String, String> {
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
@@ -256,6 +263,46 @@ async fn handle_manual_signup(
     }
 }
 
+#[tauri::command]
+async fn fetch_activity_data(email: String) -> Result<ActivityData, String> {
+    let serial_id = get_serial_number()?;
+    let client = reqwest::Client::new();
+    
+    let response = client
+        .get("http://localhost:5000/api/v1/activity/daily")
+        .query(&[
+            ("email", &email),
+            ("serial_id", &serial_id)
+        ])
+        .send()
+        .await
+        .map_err(|e| format!("Failed to send request: {}", e))?;
+
+    if response.status().is_success() {
+        let data = response
+            .json::<serde_json::Value>()
+            .await
+            .map_err(|e| format!("Failed to parse response: {}", e))?;
+        
+        Ok(ActivityData {
+            success: true,
+            data: Some(data),
+            error: None
+        })
+    } else {
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Unknown error".to_string());
+        
+        Ok(ActivityData {
+            success: false,
+            data: None,
+            error: Some(error_text)
+        })
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -265,7 +312,8 @@ fn main() {
             handle_logout,
             get_serial_number,
             check_login_status,
-            handle_manual_signup
+            handle_manual_signup,
+            fetch_activity_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

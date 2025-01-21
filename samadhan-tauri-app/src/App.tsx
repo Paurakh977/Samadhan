@@ -220,7 +220,7 @@ function App() {
                   <p className="text-zinc-500 text-xs font-medium">Screen time usage for the past week</p>
                 </div>
                 <div className="w-full h-[300px]">
-                  <ScreenTimeBarChart width={500} height={300} />
+                  <ScreenTimeBarChart width={500} height={300} email={userEmail} />
                 </div>
               </div>
             </div>
@@ -240,7 +240,7 @@ function App() {
             endMinute={10}
             endPeriod="AM"
           />
-          <DailyActivityChart />
+          <DailyActivityChart email={userEmail} />
         </div>
       </div>
     );
