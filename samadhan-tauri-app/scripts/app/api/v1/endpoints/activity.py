@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Dict, List, Optional
 import mysql.connector
-from datetime import datetime
+from datetime import datetime, timedelta
 import subprocess
 import json
 import os
@@ -153,4 +153,120 @@ async def get_daily_activity(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get activity data: {str(e)}"
-        ) 
+        )
+
+@router.get("/app-usage")
+async def get_app_usage(
+    email: str = Query(...),
+    serial_id: str = Query(...)
+) -> Dict:
+    """Get top 3 most used apps and their usage info for today"""
+    try:
+        print(f"Fetching app usage for email: {email}, serial_id: {serial_id}")  # Debug log
+        conn = get_connection()
+        dbcursor = conn.cursor()
+
+        # Get today's date
+        today = datetime.now().strftime("%Y-%m-%d")
+        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+
+        # Get today's top 3 apps with a more efficient query
+        query = """
+            SELECT 
+                tab_name,
+                SUM(used_time) as total_time,
+                (SUM(used_time) * 100.0 / (
+                    SELECT SUM(used_time)
+                    FROM app_usage_info
+                    WHERE email = %s 
+                    AND serial_id = %s 
+                    AND used_date = %s
+                )) as percentage
+            FROM app_usage_info
+            WHERE email = %s 
+            AND serial_id = %s 
+            AND used_date = %s
+            GROUP BY tab_name
+            ORDER BY total_time DESC
+            LIMIT 3
+        """
+        
+        print("Executing main query...")  # Debug log
+        dbcursor.execute(query, (email, serial_id, today, email, serial_id, today))
+        apps = dbcursor.fetchall()
+        print(f"Found apps: {apps}")  # Debug log
+
+        if not apps:
+            print("No apps found for today")  # Debug log
+            return {
+                "success": True,
+                "data": {
+                    "apps": [],
+                    "total_time": 0,
+                    "comparison": "No data yet"
+                }
+            }
+
+        # Get total time for today in a single query
+        total_query = """
+            SELECT SUM(used_time)
+            FROM app_usage_info
+            WHERE email = %s 
+            AND serial_id = %s 
+            AND used_date = %s
+        """
+        
+        print("Getting total time...")  # Debug log
+        dbcursor.execute(total_query, (email, serial_id, today))
+        total_time = dbcursor.fetchone()[0] or 0
+        print(f"Total time: {total_time}")  # Debug log
+        
+        # Get yesterday's total time
+        print("Getting yesterday's data...")  # Debug log
+        dbcursor.execute(total_query, (email, serial_id, yesterday))
+        yesterday_total = dbcursor.fetchone()[0] or 0
+        print(f"Yesterday total: {yesterday_total}")  # Debug log
+
+        # Format comparison text
+        diff_minutes = (total_time - yesterday_total) // 60  # Convert seconds to minutes
+        if yesterday_total > 0:
+            if diff_minutes > 0:
+                comparison = f"{diff_minutes // 60}h {diff_minutes % 60}m more than yesterday"
+            else:
+                abs_diff = abs(diff_minutes)
+                comparison = f"{abs_diff // 60}h {abs_diff % 60}m less than yesterday"
+        else:
+            comparison = "No data from yesterday"
+
+        # Format app data with the percentage from our optimized query
+        formatted_apps = [
+            {
+                "tab_name": name,
+                "used_time": time // 60,  # Convert seconds to minutes
+                "percentage": round(float(percentage)) if percentage else 0
+            }
+            for name, time, percentage in apps
+        ]
+
+        result = {
+            "success": True,
+            "data": {
+                "apps": formatted_apps,
+                "total_time": total_time // 60,  # Convert seconds to minutes
+                "comparison": comparison
+            }
+        }
+        print(f"Returning result: {result}")  # Debug log
+        return result
+
+    except Exception as e:
+        print(f"Error in get_app_usage: {str(e)}")  # Debug log
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get app usage data: {str(e)}"
+        )
+    finally:
+        if 'dbcursor' in locals():
+            dbcursor.close()
+        if 'conn' in locals() and conn.is_connected():
+            conn.close() 

@@ -141,7 +141,13 @@ function App() {
                       <h2 className="text-zinc-900 text-sm font-semibold">Screen Time</h2>
                       <p className="text-zinc-500 text-xs font-medium">Today's screen time usage</p>
                     </div>
-                    <HorizontalChart data={appUsageData} />
+                    {userEmail ? (
+                      <HorizontalChart email={userEmail} />
+                    ) : (
+                      <div className="flex items-center justify-center h-[300px] text-gray-500">
+                        Loading...
+                      </div>
+                    )}
                   </div>
                 </div>
 
