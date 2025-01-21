@@ -3,17 +3,36 @@ import { motion } from 'framer-motion';
 import '../../styles/login-signup-form.css';
 import { invoke } from '@tauri-apps/api/core';
 
+interface ManualLoginResponse {
+  success: boolean;
+  email: string;
+  username: string;
+}
+
+interface GoogleLoginResponse {
+  email: string;
+  username?: string;
+}
+
 interface FormData {
   username: string;
   email: string;
   password: string;
 }
 
-interface LoginSignupFormProps {
-  setShowSidebar: (show: boolean) => void;
+interface LoginResponse {
+  success: boolean;
+  email: string;
+  username: string;
 }
 
-const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => {
+interface LoginSignupFormProps {
+  setShowSidebar: (show: boolean) => void;
+  setUserEmail: (email: string) => void;
+  setUsername: (username: string) => void;
+}
+
+const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar, setUserEmail, setUsername }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -22,34 +41,39 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
     email: '',
     password: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(''); // Clear any previous errors
+    if (isLoading) return;
     
+    setIsLoading(true);
+    setErrorMessage('');
+
     try {
       if (isSignUp) {
-        // Handle signup
-        setErrorMessage('Signup functionality coming soon!');
+        alert('Signup functionality coming soon!');
+        setIsLoading(false);
         return;
       }
 
-      // Handle login
-      const username = await invoke('handle_manual_login', {
+      const response = await invoke<ManualLoginResponse>('handle_manual_login', {
         email: formData.email,
         password: formData.password
       });
 
-      // If login successful, show the main app
-      setShowSidebar(true);
-      
-    } catch (error: any) {
-      // Extract the error detail from the FastAPI error response
-      const errorDetail = error.toString().includes("Incorrect email or password") 
-        ? "Incorrect email or password"
-        : "Login failed. Please try again.";
-      
-      setErrorMessage(errorDetail);
+      if (response.success) {
+        setShowSidebar(true);
+        setUserEmail(response.email);
+        setUsername(response.username);
+      } else {
+        setErrorMessage('Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrorMessage(typeof error === 'string' ? error : 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,23 +99,24 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ setShowSidebar }) => 
   };
 
   const handleGoogleLogin = async () => {
-    setErrorMessage(''); // Clear any previous errors
     try {
-      const username = await invoke('handle_google_login');
-      if (username) {
-        setShowSidebar(true);
-      }
-    } catch (error: any) {
-      console.log("Google Login Error:", error); // This will show in browser's console
+      // First get the serial number
+      const serialId = await invoke<string>('get_serial_number');
+      console.log('Got serialId:', serialId); // Debug log
       
-      // Show user-friendly messages based on error type
-      if (error.toString().includes("USER_NOT_FOUND")) {
-        setErrorMessage("This Google account is not registered. Please sign up first.");
-      } else if (error.toString().includes("Failed to authenticate")) {
-        setErrorMessage("Google authentication failed. Please try again.");
-      } else {
-        setErrorMessage("Login failed. Please try again later. Id not registered");
+      // Then make the login request with the correct parameter name
+      const response = await invoke<GoogleLoginResponse>('handle_google_login', { 
+        serialId // Use serialId to match the Rust function parameter
+      });
+      
+      if (response.email) {
+        setShowSidebar(true);
+        setUserEmail(response.email);
+        setUsername(response.username || '');
       }
+    } catch (error) {
+      console.error('Google login error:', error);
+      setErrorMessage(typeof error === 'string' ? error : 'Login failed. Please try again.');
     }
   };
 

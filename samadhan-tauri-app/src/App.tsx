@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
+import { invoke } from '@tauri-apps/api/core';
 import LoginSignupForm from "./components/auth/LoginSignupForm";
 import { LoadingAnimation } from "./components/LoadingAnimation";
 import Sidebar from "./components/ui/Sidebar";
@@ -17,10 +18,18 @@ import "./styles/login-signup-form.css";
 import "./styles/heatmap.css";
 import "./styles/cal-heatmap.css";
 
+interface LoginStatus {
+  is_logged_in: boolean;
+  email: string | null;
+  username: string | null;
+}
+
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false);
   const [currentView, setCurrentView] = useState('home');
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
 
   // Sample data for the app usage chart
   const appUsageData = [
@@ -72,8 +81,32 @@ function App() {
     };
   }, []);
 
-  const handleLoadingComplete = () => {
+  // Check login status after loading animation completes
+  const handleLoadingComplete = async () => {
+    try {
+      const status = await invoke<LoginStatus>('check_login_status');
+      console.log('Login status:', status); // Debug log
+      
+      if (status.is_logged_in && status.email) {
+        setShowSidebar(true);
+        setUserEmail(status.email);
+        if (status.username) {
+          setUsername(status.username);
+        }
+        console.log('User logged in:', { email: status.email, username: status.username }); // Debug log
+      } else {
+        console.log('User not logged in'); // Debug log
+      }
+    } catch (error) {
+      console.error('Failed to check login status:', error);
+    }
     setIsLoading(false);
+  };
+
+  const handleLogout = () => {
+    setShowSidebar(false);
+    setUserEmail('');
+    setUsername('');
   };
 
   const renderContent = () => {
@@ -221,14 +254,23 @@ function App() {
         ) : showSidebar ? (
           <div className="flex h-screen overflow-hidden">
             <div className="flex-shrink-0">
-              <Sidebar currentView={currentView} />
+              <Sidebar 
+                currentView={currentView} 
+                userEmail={userEmail}
+                username={username}
+                onLogout={handleLogout}
+              />
             </div>
             <div className="flex-1 min-w-0">
               {renderContent()}
             </div>
           </div>
         ) : (
-          <LoginSignupForm setShowSidebar={setShowSidebar} />
+          <LoginSignupForm 
+            setShowSidebar={setShowSidebar} 
+            setUserEmail={setUserEmail}
+            setUsername={setUsername}
+          />
         )}
       </AnimatePresence>
     </div>

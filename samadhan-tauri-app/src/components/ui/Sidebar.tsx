@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { invoke } from '@tauri-apps/api/core';
+
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -57,12 +59,19 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick, isExpan
 
 interface SidebarProps {
   currentView?: string;
+  userEmail?: string;
+  username?: string;
+  onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home' }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home', userEmail, username, onLogout }) => {
   const [activeTab, setActiveTab] = React.useState(currentView);
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [isLoaded, setIsLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    setActiveTab(currentView);
+  }, [currentView]);
 
   React.useEffect(() => {
     setIsLoaded(true);
@@ -71,6 +80,18 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home' }) => {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     window.dispatchEvent(new CustomEvent('viewChange', { detail: tab }));
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (userEmail) {
+        await invoke('handle_logout', { email: userEmail });
+        handleTabChange('home'); // Reset to home before logout
+        onLogout(); // This will update the parent component's state
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -97,15 +118,15 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home' }) => {
           </motion.div>
           <AnimatePresence mode="wait">
             {isExpanded && (
-              <motion.span 
+              <motion.h2 
                 className="text-gray-800 text-[15px] font-medium tracking-wide"
                 initial={{ opacity: 0, x: -10, width: 0 }}
                 animate={{ opacity: 1, x: 0, width: 'auto' }}
                 exit={{ opacity: 0, x: -10, width: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                Samadhan
-              </motion.span>
+                Hello, {username || 'User'}
+              </motion.h2>
             )}
           </AnimatePresence>
         </div>
@@ -189,7 +210,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home' }) => {
                 exit={{ opacity: 0, y: -5 }}
                 transition={{ duration: 0.15 }}
               >
-                Hello, Paurakh
+                Hello, {username || 'User'}
               </motion.h2>
             )}
           </AnimatePresence>
@@ -263,7 +284,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home' }) => {
             </svg>}
             label="Log out"
             active={false}
-            onClick={() => {}}
+            onClick={handleLogout}
             isExpanded={isExpanded}
           />
         </motion.div>

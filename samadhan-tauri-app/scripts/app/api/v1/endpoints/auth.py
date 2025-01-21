@@ -318,4 +318,99 @@ async def google_login(
 
     except Exception as e:
         logging.error(f"Google login error: {str(e)}")
-        raise HTTPException(status_code=400, detail="LOGIN_FAILED") 
+        raise HTTPException(status_code=400, detail="LOGIN_FAILED")
+
+@router.post("/logout")
+async def logout(email: str) -> Dict[str, Any]:
+    """Logout endpoint to update logged_in_status in both tables"""
+    try:
+        conn = mysql.connector.connect(
+            host=settings.DB_HOST,
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            database=settings.DB_NAME
+        )
+        cursor = conn.cursor()
+
+        # Update Google users table
+        cursor.execute(
+            "UPDATE user_info_google SET logged_in_status = 0 WHERE email = %s",
+            (email,)
+        )
+
+        # Update Manual users table
+        cursor.execute(
+            "UPDATE user_info_manual SET logged_in_status = 0 WHERE email = %s",
+            (email,)
+        )
+
+        conn.commit()
+        logging.info(f"User {email} logged out successfully")
+        
+        return {"success": True, "message": "Logged out successfully"}
+
+    except mysql.connector.Error as e:
+        logging.error(f"Database error during logout: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error during logout"
+        )
+    finally:
+        cursor.close()
+        conn.close()
+
+@router.get("/check-login")
+async def check_login_status(serial_id: str) -> Dict[str, Any]:
+    """Check if user is logged in based on serial_id"""
+    try:
+        conn = mysql.connector.connect(
+            host=settings.DB_HOST,
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            database=settings.DB_NAME
+        )
+        cursor = conn.cursor()
+
+        # Check Google users first
+        cursor.execute(
+            "SELECT email, username FROM user_info_google WHERE serial_id = %s AND logged_in_status = 1",
+            (serial_id,)
+        )
+        records = cursor.fetchone()
+        
+        if records:
+            return {
+                "is_logged_in": True,
+                "email": records[0],
+                "username": records[1]
+            }
+        
+        # Check Manual users if not found in Google
+        cursor.execute(
+            "SELECT email, username FROM user_info_manual WHERE serial_id = %s AND logged_in_status = 1",
+            (serial_id,)
+        )
+        records = cursor.fetchone()
+        
+        if records:
+            return {
+                "is_logged_in": True,
+                "email": records[0],
+                "username": records[1]
+            }
+        
+        return {
+            "is_logged_in": False,
+            "email": None,
+            "username": None
+        }
+
+    except mysql.connector.Error as e:
+        logging.error(f"Database error checking login status: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error while checking login status"
+        )
+    finally:
+        cursor.close()
+        conn.close() 
