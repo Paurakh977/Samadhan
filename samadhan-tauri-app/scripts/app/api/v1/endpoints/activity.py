@@ -440,4 +440,151 @@ def get_app_usage_all(
         if 'cursor' in locals():
             cursor.close()
         if 'conn' in locals() and conn.is_connected():
+            conn.close()
+
+@router.get("/weekly-usage")
+async def get_weekly_usage(email: str = Query(...), serial_id: str = Query(...)):
+    """Get weekly usage data including daily totals and top 3 apps' daily usage"""
+    try:
+        if not email or not serial_id:
+            return {
+                "success": False,
+                "error": "Email and serial_id are required"
+            }
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get current week's date range
+        today = datetime.now().date()
+        current_weekday = today.weekday()  # Monday is 0, Sunday is 6
+        monday = today - timedelta(days=current_weekday)
+        
+        try:
+            # Get daily totals for the week
+            daily_totals_query = """
+                SELECT 
+                    used_date,
+                    used_day,
+                    SUM(used_time) as total_time
+                FROM app_usage_info
+                WHERE email = %s 
+                AND serial_id = %s 
+                AND used_date >= %s
+                AND used_date <= %s
+                GROUP BY used_date, used_day
+                ORDER BY used_date
+            """
+            cursor.execute(daily_totals_query, (email, serial_id, monday, today))
+            daily_totals = cursor.fetchall()
+            
+            if not daily_totals:
+                return {
+                    "success": True,
+                    "data": {
+                        "days": [],
+                        "top_apps": []
+                    }
+                }
+            
+            # Get top 3 most used apps for the week
+            top_apps_query = """
+                SELECT 
+                    tab_name,
+                    SUM(used_time) as total_time
+                FROM app_usage_info
+                WHERE email = %s 
+                AND serial_id = %s 
+                AND used_date >= %s
+                AND used_date <= %s
+                GROUP BY tab_name
+                ORDER BY total_time DESC
+                LIMIT 3
+            """
+            cursor.execute(top_apps_query, (email, serial_id, monday, today))
+            top_apps = cursor.fetchall()
+            
+            # Get daily usage for top 3 apps
+            app_daily_usage = {}
+            for app in top_apps:
+                app_name = app['tab_name']
+                daily_usage_query = """
+                    SELECT 
+                        used_date,
+                        used_day,
+                        SUM(used_time) as used_time
+                    FROM app_usage_info
+                    WHERE email = %s 
+                    AND serial_id = %s 
+                    AND tab_name = %s
+                    AND used_date >= %s
+                    AND used_date <= %s
+                    GROUP BY used_date, used_day
+                    ORDER BY used_date
+                """
+                cursor.execute(daily_usage_query, (email, serial_id, app_name, monday, today))
+                app_daily_usage[app_name] = cursor.fetchall()
+            
+            # Format the response
+            days = []
+            current_date = monday
+            while current_date <= today:
+                day_data = next(
+                    (d for d in daily_totals if d['used_date'].strftime('%Y-%m-%d') == current_date.strftime('%Y-%m-%d')), 
+                    None
+                )
+                days.append({
+                    'date': current_date.strftime('%Y-%m-%d'),
+                    'day': current_date.strftime('%A'),
+                    'total_time': day_data['total_time'] if day_data else 0
+                })
+                current_date += timedelta(days=1)
+            
+            top_apps_data = []
+            for app in top_apps:
+                app_data = {
+                    'name': app['tab_name'],
+                    'total_time': app['total_time'],
+                    'daily_usage': []
+                }
+                
+                current_date = monday
+                while current_date <= today:
+                    day_usage = next(
+                        (d for d in app_daily_usage[app['tab_name']] 
+                         if d['used_date'].strftime('%Y-%m-%d') == current_date.strftime('%Y-%m-%d')), 
+                        None
+                    )
+                    app_data['daily_usage'].append({
+                        'date': current_date.strftime('%Y-%m-%d'),
+                        'day': current_date.strftime('%A'),
+                        'used_time': day_usage['used_time'] if day_usage else 0
+                    })
+                    current_date += timedelta(days=1)
+                
+                top_apps_data.append(app_data)
+            
+            return {
+                "success": True,
+                "data": {
+                    "days": days,
+                    "top_apps": top_apps_data
+                }
+            }
+
+        except mysql.connector.Error as db_error:
+            return {
+                "success": False,
+                "error": f"Database error: {str(db_error)}"
+            }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to get weekly usage data: {str(e)}"
+        }
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals() and conn.is_connected():
             conn.close() 

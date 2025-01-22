@@ -108,7 +108,7 @@ function App() {
       return (
         <div className="h-screen flex flex-col bg-[#fafafa]">
           {/* Header - Fixed */}
-          <div className="px-8 py-6 bg-[#fafafa] border-b border-zinc-100">
+          <div className="px-4 sm:px-8 py-6 bg-[#fafafa] border-b border-zinc-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">App Usage Analytics</h2>
@@ -125,18 +125,20 @@ function App() {
           
           {/* Main Content Area - Scrollable */}
           <div className="flex-1 overflow-y-auto">
-            <div className="px-8 py-6">
-              <div className="flex gap-6">
+            <div className="px-4 sm:px-8 py-6">
+              <div className="flex flex-col lg:flex-row gap-6">
                 {/* Left Column - Fixed Width */}
-                <div className="w-[300px]">
+                <div className="w-full lg:w-[300px] lg:min-w-[300px]">
                   {/* Screen Time Card */}
-                  <div className="sticky top-6 bg-white rounded-lg shadow-sm border border-zinc-100 p-6">
+                  <div className="lg:sticky lg:top-6 bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
                     <div className="flex flex-col gap-1.5 mb-6">
                       <h2 className="text-zinc-900 text-sm font-semibold">Screen Time</h2>
                       <p className="text-zinc-500 text-xs font-medium">Today's screen time usage</p>
                     </div>
                     {userEmail ? (
-                      <HorizontalChart email={userEmail} />
+                      <div className="min-h-[300px]">
+                        <HorizontalChart email={userEmail} />
+                      </div>
                     ) : (
                       <div className="flex items-center justify-center h-[300px] text-gray-500">
                         Loading...
@@ -146,26 +148,26 @@ function App() {
                 </div>
 
                 {/* Right Column - Flexible Width */}
-                <div className="flex-1 space-y-6">
+                <div className="flex-1 min-w-0 space-y-6">
                   {/* Bar Chart */}
-                  <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-6">
+                  <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
                     <div className="flex flex-col gap-1.5 mb-4">
                       <h2 className="text-zinc-900 text-sm font-semibold">Daily Screen Time</h2>
                       <p className="text-zinc-500 text-xs font-medium">Screen time usage for the past week</p>
                     </div>
                     <div className="h-[400px]">
-                      <WeeklyUsageBarChart data={weeklyUsageData} />
+                      <WeeklyUsageBarChart email={userEmail} />
                     </div>
                   </div>
 
                   {/* Line Chart */}
-                  <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-6">
+                  <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
                     <div className="flex flex-col gap-1.5 mb-4">
                       <h2 className="text-zinc-900 text-sm font-semibold">Usage Trends</h2>
                       <p className="text-zinc-500 text-xs font-medium">Screen time trends over the past month</p>
                     </div>
                     <div className="h-[500px]">
-                      <AppUsageLineChart data={appUsageData} />
+                      <AppUsageLineChart email={userEmail} />
                     </div>
                   </div>
                 </div>

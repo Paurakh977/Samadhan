@@ -125,6 +125,8 @@ static APP_LOGOS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
     m
 });
 
+const API_URL: &str = "http://localhost:5000/api/v1";
+
 #[tauri::command]
 fn get_serial_number() -> Result<String, String> {
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
@@ -574,14 +576,7 @@ async fn fetch_all_app_usage(email: String) -> Result<AppUsageWithLogo, String> 
                                 cache_logo(&cache_key, app_name, &url);
                                 url
                             } else {
-                                // If not in dictionary, try fetching from Google Custom Search API
-                                match fetch_app_logo_internal(app_name.to_string()).await {
-                                    Ok(url) => {
-                                        cache_logo(&cache_key, app_name, &url);
-                                        url
-                                    }
-                                    Err(_) => String::new()
-                                }
+                                String::new()
                             };
 
                             if let Some(obj) = app_obj.as_object_mut() {
@@ -619,6 +614,35 @@ async fn fetch_all_app_usage(email: String) -> Result<AppUsageWithLogo, String> 
     }
 }
 
+#[tauri::command]
+async fn fetch_weekly_usage(email: String) -> Result<serde_json::Value, String> {
+    let serial_id = get_serial_number().map_err(|e| e.to_string())?;
+    let client = reqwest::Client::new();
+    
+    let response = client
+        .get(&format!("{}/activity/weekly-usage", API_URL))
+        .query(&[
+            ("email", &email),
+            ("serial_id", &serial_id)
+        ])
+        .send()
+        .await
+        .map_err(|e| format!("Failed to send request: {}", e))?;
+
+    if response.status().is_success() {
+        response
+            .json::<serde_json::Value>()
+            .await
+            .map_err(|e| format!("Failed to parse response: {}", e))
+    } else {
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Unknown error".to_string());
+        Err(format!("Request failed: {}", error_text))
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -632,6 +656,7 @@ fn main() {
             fetch_activity_data,
             fetch_app_usage_info,
             fetch_all_app_usage,
+            fetch_weekly_usage,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

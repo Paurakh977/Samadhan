@@ -7,6 +7,8 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import { useEffect, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
 ChartJS.register(
   CategoryScale,
@@ -16,22 +18,101 @@ ChartJS.register(
   Legend
 );
 
-interface WeeklyUsageData {
+interface Props {
+  email: string;
+}
+
+interface DayData {
+  date: string;
   day: string;
-  hours: number;
-  minutes: number;
+  total_time: number;
 }
 
-interface WeeklyUsageBarChartProps {
-  data: WeeklyUsageData[];
+interface AppData {
+  name: string;
+  total_time: number;
+  daily_usage: Array<{
+    date: string;
+    day: string;
+    used_time: number;
+  }>;
 }
 
-const WeeklyUsageBarChart = ({ data }: WeeklyUsageBarChartProps) => {
+interface WeeklyData {
+  days: DayData[];
+  top_apps: AppData[];
+}
+
+const WeeklyUsageBarChart: React.FC<Props> = ({ email }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [weeklyData, setWeeklyData] = useState<WeeklyData | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!email) {
+        setError('No email provided');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await invoke<any>('fetch_weekly_usage', { email });
+        
+        if (response.success && response.data) {
+          setWeeklyData(response.data);
+        } else {
+          setError('No data available');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to fetch data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [email]);
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="space-y-4 w-full animate-pulse">
+          <div className="flex justify-between space-x-4">
+            {[...Array(7)].map((_, i) => (
+              <div key={i} className="flex-1">
+                <div className="h-40 bg-gray-200 rounded-lg mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  if (!weeklyData || !weeklyData.days || weeklyData.days.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-gray-500">
+        No data available
+      </div>
+    );
+  }
+
   const chartData = {
-    labels: data.map(item => item.day),
+    labels: weeklyData.days.map(day => day.day.slice(0, 3)),
     datasets: [
       {
-        data: data.map(item => item.hours + item.minutes / 60),
+        data: weeklyData.days.map(day => day.total_time / 3600), // Convert seconds to hours
         backgroundColor: '#6355f1',
         hoverBackgroundColor: '#5346e8',
         borderRadius: 12,
