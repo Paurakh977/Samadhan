@@ -17,6 +17,7 @@ import { heatmapData } from './data/heatmapData';
 import "./styles/login-signup-form.css";
 import "./styles/heatmap.css";
 import "./styles/cal-heatmap.css";
+import GoalsList from "./components/GoalsList";
 
 interface LoginStatus {
   is_logged_in: boolean;
@@ -203,38 +204,32 @@ function App() {
 
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
-            <div className="space-y-6 max-w-[1800px] mx-auto">
-              {/* Activity Heatmap - Full Width */}
-              <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Left Column - Daily Goals */}
+              <div className="w-full lg:w-[300px] lg:min-w-[300px]">
+                <div className="bg-white rounded-lg  h-[400px]">
+                  <GoalsList />
+                </div>
+              </div>
+
+              {/* Right Column - Activity Contributions */}
+              <div className="bg-white rounded-lg shadow-lg border border-zinc-100 p-6 flex-1">
                 <div className="flex flex-col gap-1.5 mb-6">
                   <h2 className="text-zinc-900 text-sm font-semibold">Activity Contributions</h2>
                   <p className="text-zinc-500 text-xs font-medium">Your daily app usage activity over the past year</p>
                 </div>
                 <ActivityHeatmap data={heatmapData} />
               </div>
+            </div>
 
-              {/* App Usage Distribution */}
-              <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
-                  <div className="flex flex-col gap-1.5 mb-4">
-                    <h2 className="text-zinc-900 text-sm font-semibold">App Usage Distribution</h2>
-                    <p className="text-zinc-500 text-xs font-medium">Your app usage breakdown</p>
-                  </div>
-                  <div className="h-[350px]">
-                    <AppUsageDoughnutChart email={userEmail} />
-                  </div>
-                </div>
+            {/* Screen Time Bar Chart - Full Width at the Bottom */}
+            <div className="bg-white rounded-lg shadow-lg border border-zinc-100 p-6 mt-6">
+              <div className="flex flex-col gap-1.5 mb-6">
+                <h2 className="text-zinc-900 text-sm font-semibold">Screen Time by Category</h2>
+                <p className="text-zinc-500 text-xs font-medium">Screen time usage for the past week</p>
               </div>
-
-              {/* Screen Time Bar Chart */}
-              <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
-                <div className="flex flex-col gap-1.5 mb-6">
-                  <h2 className="text-zinc-900 text-sm font-semibold">Screen Time by Category</h2>
-                  <p className="text-zinc-500 text-xs font-medium">Screen time usage for the past week</p>
-                </div>
-                <div className="w-full h-[400px]">
-                  <ScreenTimeBarChart width={800} height={400} email={userEmail} />
-                </div>
+              <div className="w-full h-[400px]">
+                <ScreenTimeBarChart width={800} height={400} email={userEmail} />
               </div>
             </div>
           </div>
