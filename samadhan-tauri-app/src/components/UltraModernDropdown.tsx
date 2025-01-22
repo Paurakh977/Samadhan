@@ -2,11 +2,21 @@ import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { MinimalIcon } from "./MinimalIcon"
 
-const options = ["Today", "Yesterday", "This Week"]
+type TimeOption = 'today' | 'yesterday' | 'this_week';
+const options: TimeOption[] = ["today", "yesterday", "this_week"];
+const displayNames: Record<TimeOption, string> = {
+  today: "Today",
+  yesterday: "Yesterday",
+  this_week: "This Week"
+};
 
-export default function UltraModernDropdown() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [selected, setSelected] = useState(options[0])
+interface Props {
+  value: TimeOption;
+  onChange: (value: TimeOption) => void;
+}
+
+export default function UltraModernDropdown({ value, onChange }: Props) {
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="relative font-sans z-50">
@@ -26,7 +36,7 @@ export default function UltraModernDropdown() {
           }}
           transition={{ duration: 0.2 }}
         >
-          {selected}
+          {displayNames[value]}
         </motion.span>
         <MinimalIcon isOpen={isOpen} />
       </motion.button>
@@ -44,8 +54,8 @@ export default function UltraModernDropdown() {
               <motion.button
                 key={option}
                 onClick={() => {
-                  setSelected(option)
-                  setIsOpen(false)
+                  onChange(option);
+                  setIsOpen(false);
                 }}
                 className="relative block w-full text-left px-4 py-2 text-sm text-gray-600 transition-all duration-200 hover:pl-6"
                 initial={{ opacity: 0, x: -4 }}
@@ -69,7 +79,7 @@ export default function UltraModernDropdown() {
                   }}
                   className="absolute left-2 top-1/2 -translate-y-1/2 w-1 h-1 bg-blue-500 rounded-full"
                 />
-                {option}
+                {displayNames[option]}
               </motion.button>
             ))}
           </motion.div>

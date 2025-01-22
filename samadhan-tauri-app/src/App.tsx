@@ -62,13 +62,7 @@ function App() {
   ];
 
   // Sample data for the doughnut chart
-  const appUsageBreakdown = [
-    { appName: "VS Code", hours: 4.2, color: "#0f3460" },
-    { appName: "Chrome", hours: 3.8, color: "#1a4b8c" },
-    { appName: "Spotify", hours: 3.5, color: "#2563eb" },
-    { appName: "Discord", hours: 2.8, color: "#60a5fa" },
-    { appName: "Terminal", hours: 2.1, color: "#93c5fd" }
-  ];
+
 
   useEffect(() => {
     const handleViewChange = (event: CustomEvent) => {
@@ -214,7 +208,7 @@ function App() {
                     <p className="text-zinc-500 text-xs font-medium">Your app usage breakdown</p>
                   </div>
                   <div className="h-[350px]">
-                    <AppUsageDoughnutChart data={appUsageBreakdown} />
+                    <AppUsageDoughnutChart email={userEmail} />
                   </div>
                 </div>
               </div>
