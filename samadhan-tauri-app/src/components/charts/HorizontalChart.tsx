@@ -3,6 +3,7 @@ import { Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { invoke } from '@tauri-apps/api/core';
 import '../../styles/horizontal-chart.css';
+import UltraModernDropdown from '../UltraModernDropdown';
 
 interface Props {
   email: string;
@@ -232,22 +233,25 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
       animate="visible"
       className="h-full flex flex-col"
     >
-      {/* Time Display */}
-      <motion.div variants={timeVariants} className="mb-3">
-        <motion.h1 
-          className="text-[22px] font-semibold tracking-tight text-gray-900"
-          layoutId="timeDisplay"
-        >
-          {formatTime(totalTime)}
-        </motion.h1>
-        <motion.p 
-          className="text-gray-500 text-xs font-medium"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          {comparisonText}
-        </motion.p>
+      {/* Time Display with Dropdown */}
+      <motion.div variants={timeVariants} className="mb-3 flex items-center justify-between">
+        <div>
+          <motion.h1 
+            className="text-[22px] font-semibold tracking-tight text-gray-900"
+            layoutId="timeDisplay"
+          >
+            {formatTime(totalTime)}
+          </motion.h1>
+          <motion.p 
+            className="text-gray-500 text-xs font-medium"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            {comparisonText}
+          </motion.p>
+        </div>
+        <UltraModernDropdown />
       </motion.div>
 
       {/* Enhanced 3D Progress Bar */}

@@ -6,6 +6,7 @@ import {
   Legend
 } from 'chart.js';
 import { useRef } from 'react';
+import UltraModernDropdown from '../UltraModernDropdown';
 
 ChartJS.register(
   ArcElement,
@@ -169,6 +170,9 @@ const AppUsageDoughnutChart = ({ data }: AppUsageDoughnutChartProps) => {
 
   return (
     <div className="h-full w-full flex flex-col">
+      <div className="flex justify-end mb-4">
+        <UltraModernDropdown />
+      </div>
       <div className="relative flex-1">
         <Doughnut 
           ref={(element) => {
