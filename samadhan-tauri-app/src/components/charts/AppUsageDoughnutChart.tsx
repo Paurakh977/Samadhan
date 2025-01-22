@@ -69,10 +69,6 @@ const AppUsageDoughnutChart: React.FC<Props> = ({ email }) => {
       }
 
       try {
-        console.log('Fetching data for email:', email);
-        // Clear existing cache on component mount
-        sessionStorage.removeItem(`app_usage_all_${email}`);
-
         // Fetch fresh data from API
         const response = await invoke<{
           success: boolean;
@@ -86,11 +82,8 @@ const AppUsageDoughnutChart: React.FC<Props> = ({ email }) => {
           error?: string;
         }>('fetch_all_app_usage', { email });
 
-        console.log('API Response:', response);
-
         if (response.success && response.data) {
-          const rawData = response.data.data; // Access the nested data object
-          console.log('Raw data:', rawData);
+          const rawData = response.data.data;
           
           // Process the data and convert seconds to hours
           const processData = (periodData: { apps: AppUsageData[], total_time: number }) => {
@@ -110,14 +103,11 @@ const AppUsageDoughnutChart: React.FC<Props> = ({ email }) => {
             this_week: processData(rawData.this_week)
           };
 
-          console.log('Processed data:', processedData);
           setCachedData(processedData);
         } else {
-          console.error('API Error:', response.error);
           setError(response.error || 'No data available');
         }
       } catch (error) {
-        console.error('Error fetching app usage data:', error);
         setError('Failed to fetch data');
       } finally {
         setIsLoading(false);

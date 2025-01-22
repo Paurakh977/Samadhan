@@ -10,118 +10,124 @@ interface Props {
 }
 
 interface AppUsageData {
-  tab_name: string;
-  used_time: string | number;
-  percentage: number;
+  name: string;
+  used_time: number;
+  percentage?: number;
   logo_url?: string;
+}
+
+interface PeriodData {
+  apps: AppUsageData[];
+  total_time: number;
+}
+
+interface BackendData {
+  today: PeriodData;
+  yesterday: PeriodData;
+  this_week: PeriodData;
+}
+
+interface BackendResponse {
+  success: boolean;
+  data: {
+    data: BackendData;
+  };
+  error?: string;
 }
 
 const HorizontalChart: React.FC<Props> = ({ email }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'yesterday' | 'this_week'>('today');
+  const [cachedData, setCachedData] = useState<BackendData | null>(null);
   const [totalTime, setTotalTime] = useState(0);
   const [appData, setAppData] = useState<AppUsageData[]>([]);
   const [comparisonText, setComparisonText] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  // Cache key for sessionStorage
-  const CACHE_KEY = `app_usage_${email}`;
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!email) {
-        console.error('No email provided to HorizontalChart');
-        setError('No email provided');
-        setIsLoading(false);
-        return;
-      }
-      
-      console.log('HorizontalChart: Fetching data for email:', email);
-      setError(null);
-
-      // Try to get cached data first
-      const cachedData = sessionStorage.getItem(CACHE_KEY);
-      if (cachedData) {
-        console.log('HorizontalChart: Found cached data');
-        try {
-          const { apps, total, comparison } = JSON.parse(cachedData);
-          setAppData(apps);
-          setTotalTime(total);
-          setComparisonText(comparison);
-          setIsLoading(false);
-          return;
-        } catch (e) {
-          console.error('HorizontalChart: Error parsing cached data:', e);
-          sessionStorage.removeItem(CACHE_KEY);
-        }
-      }
-      
       try {
-        console.log('HorizontalChart: Making API request...');
-        const response = await invoke<{
-          success: boolean;
-          data?: {
-            data: {
-              apps: AppUsageData[];
-              total_time: string;
-              comparison: string;
-            };
-            success: boolean;
-          };
-          error?: string;
-        }>('fetch_app_usage_info', { email });
+        console.log('Fetching data for email:', email);
+        setIsLoading(true);
+        setError(null);
 
-        console.log('HorizontalChart: Raw API Response:', JSON.stringify(response, null, 2));
+        // Check if we have cached data
+        const cachedDataStr = sessionStorage.getItem(`app_usage_all_${email}`);
+        let responseData;
 
-        if (response.success && response.data?.data) {
-          const { apps, total_time, comparison } = response.data.data;
+        if (cachedDataStr) {
+          console.log('Found cached data');
+          responseData = JSON.parse(cachedDataStr);
+        } else {
+          console.log('Fetching fresh data from backend');
+          const response = await invoke<any>('fetch_all_app_usage', { email });
+          console.log('Backend response:', response);
           
-          console.log('HorizontalChart: Setting data:', {
-            apps,
-            total: total_time,
-            comparison
-          });
-          
-          if (!Array.isArray(apps)) {
-            console.error('HorizontalChart: apps data is not an array:', apps);
-            setError('Invalid data format');
-            setIsLoading(false);
-            return;
+          if (!response.success) {
+            throw new Error(response.error || 'Failed to fetch data');
           }
 
-          // Process the apps data
-          const processedApps = apps.map(app => ({
-            ...app,
-            used_time: typeof app.used_time === 'string' ? parseInt(app.used_time, 10) : app.used_time
-          }));
-
-          setAppData(processedApps);
-          const totalTimeNum = parseInt(total_time, 10);
-          setTotalTime(totalTimeNum);
-          setComparisonText(comparison);
-
-          // Cache the processed data
-          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-            apps: processedApps,
-            total: totalTimeNum,
-            comparison
-          }));
-        } else if (response.error) {
-          console.error('HorizontalChart: Error from API:', response.error);
-          setError(response.error);
-        } else {
-          console.error('HorizontalChart: No data in response');
-          setError('No data available');
+          responseData = response;
+          sessionStorage.setItem(`app_usage_all_${email}`, JSON.stringify(responseData));
         }
-      } catch (error) {
-        console.error('HorizontalChart: Error fetching app usage data:', error);
-        setError('Failed to fetch data');
+
+        const data = responseData.data.data;
+        console.log('Extracted data:', data);
+
+        const emptyData = { apps: [], total_time: 0 };
+        const periodData = data[selectedPeriod] || emptyData;
+        console.log(`Setting data for ${selectedPeriod}:`, periodData);
+        
+        setCachedData(data);
+        setTotalTime(periodData.total_time || 0);
+        
+        // Process and set app data with percentages (top 5 only)
+        const apps = periodData.apps
+          .map((app: AppUsageData) => ({
+            name: app.name,
+            used_time: app.used_time,
+            logo_url: app.logo_url
+          }))
+          .sort((a: AppUsageData, b: AppUsageData) => b.used_time - a.used_time)
+          .slice(0, 5); // Take top 5 apps
+        
+        console.log('Processed app data:', apps);
+        setAppData(apps);
+
+        // Set comparison text
+        if (selectedPeriod === 'today') {
+          const yesterdayTotal = data.yesterday?.total_time || 0;
+          const diff = periodData.total_time - yesterdayTotal;
+          const diffMinutes = Math.abs(Math.floor(diff / 60));
+          setComparisonText(
+            diff > 0 
+              ? `${Math.floor(diffMinutes / 60)}h ${diffMinutes % 60}m more than yesterday`
+              : `${Math.floor(diffMinutes / 60)}h ${diffMinutes % 60}m less than yesterday`
+          );
+        } else if (selectedPeriod === 'yesterday') {
+          setComparisonText('Compared to the day before');
+        } else {
+          setComparisonText('Weekly usage summary');
+        }
+
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [email]);
+  }, [email, selectedPeriod]);
+
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+    return `${hours}h ${minutes}m`;
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -166,29 +172,6 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
     }
   };
 
-  const formatTime = (minutes: string | number): string => {
-    const mins = typeof minutes === 'string' ? parseInt(minutes, 10) : minutes;
-    const hours = Math.floor(mins / 60);
-    const remainingMins = mins % 60;
-    if (hours === 0) {
-      return `${remainingMins}m`;
-    }
-    if (remainingMins === 0) {
-      return `${hours}h`;
-    }
-    return `${hours}h ${remainingMins}m`;
-  };
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center text-red-500">
-        <p>Error: {error}</p>
-      </div>
-    );
-  }
-
-  // Loading skeleton
   if (isLoading) {
     return (
       <motion.div 
@@ -217,11 +200,10 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
     );
   }
 
-  // Show empty state if no data
-  if (!appData || appData.length === 0) {
+  if (error) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-gray-500">
-        <p>No app usage data available</p>
+      <div className="h-full flex items-center justify-center text-red-500">
+        {error}
       </div>
     );
   }
@@ -251,24 +233,55 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
             {comparisonText}
           </motion.p>
         </div>
-        <UltraModernDropdown />
+        <UltraModernDropdown 
+          value={selectedPeriod}
+          onChange={(value) => setSelectedPeriod(value as 'today' | 'yesterday' | 'this_week')}
+        />
       </motion.div>
 
       {/* Enhanced 3D Progress Bar */}
       <div className="relative h-3 bg-blue-50/80 backdrop-blur-xl rounded-full progress-bar-3d mb-4">
-        <div className="absolute inset-0 flex overflow-hidden rounded-full">
-          {appData.map((app, index) => (
-          <motion.div 
-              key={index}
-            variants={progressVariants}
-              style={{ width: `${app.percentage}%` }} 
-              className={`progress-segment bg-gradient-to-r ${
-                index === 0 ? 'from-[#1E3A8A] via-[#1E40AF] to-[#2563EB] rounded-l-full' :
-                index === 1 ? 'from-[#3B82F6] via-[#60A5FA] to-[#93C5FD]' :
-                'from-[#60A5FA] via-[#93C5FD] to-[#BFDBFE] rounded-r-full'
-              }`}
-            />
-          ))}
+        {/* Container for all segments - width based on usage vs limit */}
+        <div className="absolute inset-y-0 left-0 flex overflow-hidden rounded-full w-full" 
+          style={{ 
+            width: `${(() => {
+              // Daily limit is 7 hours (25200 seconds)
+              const dailyLimitInSeconds = 7 * 60 * 60; // 25200 seconds
+              const weeklyLimitInSeconds = 45 * 60 * 60; // 162000 seconds
+              
+              const maxSeconds = selectedPeriod === 'this_week' ? weeklyLimitInSeconds : dailyLimitInSeconds;
+              const percentage = (totalTime / maxSeconds) * 100;
+              
+              console.log('Debug width calculation:', {
+                period: selectedPeriod,
+                totalTime,
+                maxSeconds,
+                percentage: Math.min(100, percentage)
+              });
+              
+              return Math.min(100, percentage);
+            })()}%` 
+          }}>
+          <div className="flex h-full w-full">
+            {appData.map((app, index) => {
+              // Calculate percentage within the scaled width
+              const relativePercentage = (app.used_time / totalTime) * 100;
+              return (
+                <motion.div 
+                  key={index}
+                  variants={progressVariants}
+                  style={{ width: `${relativePercentage}%` }} 
+                  className={`h-full progress-segment bg-gradient-to-r ${
+                    index === 0 ? 'from-[#1E3A8A] via-[#1E40AF] to-[#2563EB] rounded-l-full' :
+                    index === 1 ? 'from-[#3B82F6] via-[#60A5FA] to-[#93C5FD]' :
+                    index === 2 ? 'from-[#60A5FA] via-[#93C5FD] to-[#BFDBFE]' :
+                    index === 3 ? 'from-[#93C5FD] via-[#BFDBFE] to-[#DBEAFE]' :
+                    'from-[#BFDBFE] via-[#DBEAFE] to-[#EFF6FF] rounded-r-full'
+                  }`}
+                />
+              );
+            })}
+          </div>
         </div>
         <div className="absolute inset-0 w-full h-full rounded-full opacity-60 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.9),rgba(255,255,255,0))]" />
       </div>
@@ -276,54 +289,58 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
       {/* App List */}
       <div className="space-y-2.5 flex-1">
         {appData.map((app, index) => (
-        <motion.div 
+          <motion.div 
             key={index}
-          variants={appItemVariants}
-          whileHover={{ x: 4 }}
-          className="flex items-center justify-between group hover:bg-blue-50/80 p-2 rounded-xl transition-all duration-300"
-        >
-          <div className="flex items-center gap-3">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
+            variants={appItemVariants}
+            whileHover={{ x: 4 }}
+            className="flex items-center justify-between group hover:bg-blue-50/80 p-2 rounded-xl transition-all duration-300"
+          >
+            <div className="flex items-center gap-3">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
                 className={`w-9 h-9 ${
                   index === 0 ? 'bg-[#1E293B]' :
-                  index === 1 ? 'bg-white border border-blue-100' :
-                  'bg-gradient-to-br from-[#1E293B] to-[#334155]'
+                  index === 1 ? 'bg-[#faf1f0] border border-blue-100' :
+                  index === 2 ? 'bg-[#faf1f0]' :
+                  index === 3 ? 'bg-[#faf1f0]' :
+                  'bg-[#faf1f0]'
                 } rounded-xl flex items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.1)] transform group-hover:scale-105 transition-transform duration-300`}
               >
                 {app.logo_url ? (
                   <img 
                     src={app.logo_url}
-                    alt={app.tab_name}
-                className="w-5 h-5 object-contain"
+                    alt={app.name}
+                    className="w-5 h-5 object-contain"
                     onError={(e) => {
-                      // Fallback icon if image fails to load
-                      e.currentTarget.src = "https://images.unsplash.com/photo-1611605698335-8b1569810432?auto=format&fit=crop&q=80&w=100&h=100";
+                      console.log(`Error loading logo for ${app.name}`);
+                      e.currentTarget.style.display = 'none';
                     }}
                   />
                 ) : (
-              <Settings className="w-4 h-4 text-white" />
+                  <Settings className="w-4 h-4 text-gray-400" />
                 )}
-            </motion.div>
-              <span className="font-medium text-[#1E293B] text-sm tracking-tight">{app.tab_name}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <motion.span 
-              whileHover={{ color: "#2563EB" }}
-              className="text-[#64748B] font-medium group-hover:text-[#2563EB] transition-colors duration-300 text-sm"
-            >
-                {formatTime(app.used_time as number)}
-            </motion.span>
-            <motion.div 
-              whileHover={{ scale: 1.2 }}
+              </motion.div>
+              <span className="font-medium text-[#1E293B] text-sm tracking-tight">{app.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <motion.span 
+                whileHover={{ color: "#2563EB" }}
+                className="text-[#64748B] font-medium group-hover:text-[#2563EB] transition-colors duration-300 text-sm"
+              >
+                {formatTime(app.used_time)}
+              </motion.span>
+              <motion.div 
+                whileHover={{ scale: 1.2 }}
                 className={`w-2 h-2 rounded-full bg-gradient-to-r ${
                   index === 0 ? 'from-[#1E3A8A] to-[#2563EB]' :
                   index === 1 ? 'from-[#3B82F6] to-[#93C5FD]' :
-                  'from-[#60A5FA] to-[#BFDBFE]'
+                  index === 2 ? 'from-[#60A5FA] to-[#BFDBFE]' :
+                  index === 3 ? 'from-[#93C5FD] to-[#DBEAFE]' :
+                  'from-[#BFDBFE] to-[#EFF6FF]'
                 } shadow-[0_2px_4px_rgba(37,99,235,0.3)]`}
-            />
-          </div>
-        </motion.div>
+              />
+            </div>
+          </motion.div>
         ))}
       </div>
     </motion.div>

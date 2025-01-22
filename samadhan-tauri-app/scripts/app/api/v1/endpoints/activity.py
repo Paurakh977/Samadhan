@@ -220,68 +220,115 @@ def get_app_usage_info(email: str, serial_id: str, period: str) -> Dict:
         cursor = conn.cursor(dictionary=True)
         
         date_ranges = get_date_ranges()
+        print(f"Date ranges: {date_ranges}")  # Debug log
         
         # Get the appropriate date based on period
         if period == "today":
             target_date = date_ranges["today"]
             query = """
-                SELECT tab_name, SUM(used_time) as total_time
+                SELECT 
+                    tab_name as name, 
+                    SUM(used_time) as used_time
                 FROM app_usage_info
-                WHERE email = %s AND serial_id = %s AND used_date = %s
+                WHERE email = %s 
+                AND serial_id = %s 
+                AND (used_date = %s OR used_day = %s)
                 GROUP BY tab_name
-                ORDER BY total_time DESC
+                ORDER BY used_time DESC
             """
-            params = (email, serial_id, target_date)
+            today_day = target_date.strftime("%A")  # Get day name (Monday, Tuesday, etc.)
+            params = (email, serial_id, target_date, today_day)
         elif period == "yesterday":
             target_date = date_ranges["yesterday"]
             query = """
-                SELECT tab_name, SUM(used_time) as total_time
+                SELECT 
+                    tab_name as name, 
+                    SUM(used_time) as used_time
                 FROM app_usage_info
-                WHERE email = %s AND serial_id = %s AND used_date = %s
+                WHERE email = %s 
+                AND serial_id = %s 
+                AND (used_date = %s OR used_day = %s)
                 GROUP BY tab_name
-                ORDER BY total_time DESC
+                ORDER BY used_time DESC
             """
-            params = (email, serial_id, target_date)
+            yesterday_day = target_date.strftime("%A")
+            params = (email, serial_id, target_date, yesterday_day)
         else:  # this_week
             query = """
-                SELECT tab_name, SUM(used_time) as total_time
+                SELECT 
+                    tab_name as name, 
+                    SUM(used_time) as used_time
                 FROM app_usage_info
-                WHERE email = %s AND serial_id = %s 
-                AND used_date BETWEEN %s AND %s
+                WHERE email = %s 
+                AND serial_id = %s 
+                AND (used_date BETWEEN %s AND %s)
                 GROUP BY tab_name
-                ORDER BY total_time DESC
+                ORDER BY used_time DESC
             """
-            params = (email, serial_id, date_ranges["week_start"], date_ranges["week_end"])
+            params = (email, serial_id, date_ranges["week_start"], date_ranges["today"])
+
+        print(f"Executing query: {query}")  # Debug log
+        print(f"Query params: {params}")    # Debug log
         
         cursor.execute(query, params)
-        apps = cursor.fetchall()
-        
-        # Process the apps data
+        apps_data = cursor.fetchall()
+        print(f"Raw apps data from DB: {apps_data}")  # Debug log
+
+        # Calculate total time
+        total_time = sum(app['used_time'] for app in apps_data) if apps_data else 0
+        print(f"Total time calculated: {total_time}")  # Debug log
+
+        # If no data found, return empty structure
+        if not apps_data:
+            print("No data found in database")  # Debug log
+            return {
+                "apps": [],
+                "total_time": 0
+            }
+
+        # Process apps data to add logo URLs
         processed_apps = []
-        total_time = 0
-        
-        for app in apps:
-            total_time += app['total_time']
+        for app in apps_data:
+            app_name = app['name']
+            # Add default logo URL based on app name
+            logo_url = None
+            if app_name.lower() in ['chrome', 'google chrome']:
+                logo_url = "https://upload.wikimedia.org/wikipedia/commons/e/e1/Google_Chrome_icon_%28February_2022%29.svg"
+            elif app_name.lower() in ['firefox', 'mozilla firefox']:
+                logo_url = "https://upload.wikimedia.org/wikipedia/commons/a/a0/Firefox_logo%2C_2019.svg"
+            elif app_name.lower() in ['spotify']:
+                logo_url = "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg"
+            elif app_name.lower() in ['vscode', 'visual studio code']:
+                logo_url = "https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg"
+            elif app_name.lower() in ['cursor']:
+                logo_url = "https://cursor.sh/favicon.ico"
+            
             processed_apps.append({
-                "name": app['tab_name'],
-                "used_time": app['total_time']
+                "name": app_name,
+                "used_time": int(app['used_time']),  # Convert to int to avoid decimal issues
+                "logo_url": logo_url
             })
-        
-        return {
+
+        result = {
             "apps": processed_apps,
-            "total_time": total_time
+            "total_time": int(total_time)  # Convert to int to avoid decimal issues
         }
-        
+        print(f"Final processed result: {result}")  # Debug log
+        return result
+
     except Exception as e:
         print(f"Error in get_app_usage_info: {str(e)}")
+        print(f"Error type: {type(e)}")
+        print(f"Error args: {e.args}")
+        # Return empty structure instead of raising error
         return {
             "apps": [],
             "total_time": 0
         }
     finally:
-        if 'cursor' in locals():
+        if cursor:
             cursor.close()
-        if 'conn' in locals() and conn.is_connected():
+        if conn:
             conn.close()
 
 def get_app_usage_all(
