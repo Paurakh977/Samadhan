@@ -1,9 +1,10 @@
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bar } from '@visx/shape';
 import { Group } from '@visx/group';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { Text } from '@visx/text';
+import { invoke } from '@tauri-apps/api/core';
 
 interface ScreenTimeData {
   day: string;
@@ -15,16 +16,6 @@ interface ScreenTimeData {
 
 type Category = keyof Omit<ScreenTimeData, 'day'>;
 
-const data: ScreenTimeData[] = [
-  { day: 'Mon', entertainment: 2.5, social: 1.8, productivity: 3.2, other: 0.8 },
-  { day: 'Tue', entertainment: 2.1, social: 2.2, productivity: 4.1, other: 0.5 },
-  { day: 'Wed', entertainment: 3.2, social: 1.5, productivity: 3.8, other: 0.7 },
-  { day: 'Thu', entertainment: 2.8, social: 2.1, productivity: 3.5, other: 0.9 },
-  { day: 'Fri', entertainment: 3.5, social: 2.8, productivity: 2.9, other: 1.1 },
-  { day: 'Sat', entertainment: 4.2, social: 3.1, productivity: 2.1, other: 1.3 },
-  { day: 'Sun', entertainment: 4.8, social: 3.5, productivity: 1.8, other: 1.5 }
-];
-
 const categories: Category[] = ['entertainment', 'social', 'productivity', 'other'];
 const colors: Record<Category, string> = {
   entertainment: '#FF6B6B',
@@ -33,7 +24,6 @@ const colors: Record<Category, string> = {
   other: '#96A5A6'
 };
 
-// Add category labels mapping for better display names
 const categoryLabels: Record<Category, string> = {
   entertainment: 'Entertainment',
   social: 'Social',
@@ -44,6 +34,7 @@ const categoryLabels: Record<Category, string> = {
 interface Props {
   width: number;
   height: number;
+  email: string;
 }
 
 interface TooltipData {
@@ -53,12 +44,57 @@ interface TooltipData {
   data: ScreenTimeData;
 }
 
-const ScreenTimeBarChart = memo(({ width, height }: Props) => {
+const ScreenTimeBarChart = memo(({ width, height, email }: Props) => {
   const [hoveredBar, setHoveredBar] = useState<string | null>(null);
   const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
+  const [data, setData] = useState<ScreenTimeData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await invoke<any>('fetch_category_screen_time', { email });
+        
+        if (response.status === 'success') {
+          const days = response.data.days;
+          const dates = Object.keys(days).sort();
+          
+          const processedData: ScreenTimeData[] = dates.map(date => {
+            const dayData = days[date];
+            const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+            
+            return {
+              day: dayName,
+              entertainment: dayData['Entertainment'] || 0,
+              social: dayData['Social Networking'] || 0,
+              productivity: dayData['Productivity'] || 0,
+              other: dayData['Others'] || 0
+            };
+          });
+          
+          setData(processedData);
+        } else {
+          setError('Failed to fetch data');
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to fetch data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (email) {
+      fetchData();
+    }
+  }, [email]);
 
   // Margins
-  const margin = { top: 30, right: 20, bottom: 20, left: 50 };
+  const margin = { top: 40, right: 30, bottom: 30, left: 60 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -66,7 +102,7 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
   const yScale = scaleBand({
     range: [0, innerHeight],
     domain: data.map(d => d.day),
-    padding: 0.15  // Reduced padding between day groups for much thicker bars
+    padding: 0.2  // Increased padding for better spacing
   });
 
   const xScale = scaleLinear({
@@ -77,8 +113,8 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
     nice: true
   });
 
-  // Calculate bar height with better proportions
-  const categoryPadding = 1; // Minimal padding between bars in the same group
+  // Bar dimensions
+  const categoryPadding = 2; // Increased padding between categories
   const groupHeight = yScale.bandwidth();
   const barHeight = (groupHeight - (categoryPadding * (categories.length - 1))) / categories.length;
 
@@ -98,9 +134,37 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
     setTooltipData(null);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="animate-pulse text-gray-400 text-sm"
+        >
+          Loading screen time data...
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-red-500 text-sm font-medium"
+        >
+          {error}
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative">
-      {/* Legend with fade in animation */}
+      {/* Legend with original animation */}
       <motion.div 
         initial={{ opacity: 0, y: -5 }}
         animate={{ opacity: 1, y: 0 }}
@@ -130,7 +194,7 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
 
       <svg width={width} height={height}>
         <Group left={margin.left} top={margin.top}>
-          {/* Y-axis labels with fade in */}
+          {/* Y-axis labels with original fade animation */}
           {yScale.domain().map((day, index) => (
             <motion.g
               key={day}
@@ -153,7 +217,7 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
             </motion.g>
           ))}
 
-          {/* Bars with staggered animation */}
+          {/* Bars with original staggered animation */}
           {data.map((d, dayIndex) => (
             <Group key={d.day}>
               {categories.map((category, i) => {
@@ -191,7 +255,7 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
                         height={barHeight}
                         fill={colors[category]}
                         opacity={isHovered ? 1 : 0.92}
-                        rx={4}
+                        rx={8}
                         onMouseEnter={(e) => handleMouseEnter(e, d, category)}
                         onMouseLeave={handleMouseLeave}
                         style={{
@@ -208,6 +272,7 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
         </Group>
       </svg>
 
+      {/* Original tooltip implementation */}
       <AnimatePresence>
         {tooltipData && (
           <motion.div
@@ -239,7 +304,11 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
                     </span>
                   </div>
                   <span className="font-semibold text-gray-900 tabular-nums">
-                    {tooltipData.data[category].toFixed(1)}h
+                    {(() => {
+                      const hours = Math.floor(tooltipData.data[category]);
+                      const minutes = Math.round((tooltipData.data[category] - hours) * 60);
+                      return `${hours}h ${minutes}m`;
+                    })()}
                   </span>
                 </div>
               ))}
@@ -253,4 +322,4 @@ const ScreenTimeBarChart = memo(({ width, height }: Props) => {
 
 ScreenTimeBarChart.displayName = 'ScreenTimeBarChart';
 
-export default ScreenTimeBarChart; 
+export default ScreenTimeBarChart;

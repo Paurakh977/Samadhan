@@ -221,8 +221,8 @@ function App() {
                   <h2 className="text-zinc-900 text-sm font-semibold">Screen Time by Category</h2>
                   <p className="text-zinc-500 text-xs font-medium">Screen time usage for the past week</p>
                 </div>
-                <div className="w-full h-[300px]">
-                  <ScreenTimeBarChart width={500} height={300} email={userEmail} />
+                <div className="w-full h-[400px]">
+                  <ScreenTimeBarChart width={800} height={400} email={userEmail} />
                 </div>
               </div>
             </div>

@@ -588,3 +588,69 @@ async def get_weekly_usage(email: str = Query(...), serial_id: str = Query(...))
             cursor.close()
         if 'conn' in locals() and conn.is_connected():
             conn.close() 
+
+@router.get("/category-screen-time")
+async def get_category_screen_time(email: str, serial_id: str):
+    try:
+        today = datetime.now()
+        start_of_week = today - timedelta(days=today.weekday())
+        
+        today_str = today.strftime('%Y-%m-%d')
+        start_of_week_str = start_of_week.strftime('%Y-%m-%d')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        query = """
+            SELECT 
+                app_name as category,
+                used_date,
+                SUM(used_time) as total_time
+            FROM app_hour_data
+            WHERE email = %s 
+            AND serial_id = %s
+            AND used_date BETWEEN %s AND %s
+            GROUP BY app_name, used_date
+            ORDER BY used_date, app_name
+        """
+            
+        cursor.execute(query, (email, serial_id, start_of_week_str, today_str))
+        result = cursor.fetchall()
+        
+        days = {}
+        categories = set()
+        
+        for row in result:
+            category = row['category']
+            date = row['used_date'].strftime('%Y-%m-%d')
+            time = row['total_time']
+            
+            categories.add(category)
+            if date not in days:
+                days[date] = {}
+            days[date][category] = time / 3600  # Convert seconds to hours
+        
+        # Fill in missing categories with 0
+        for date in days:
+            for category in categories:
+                if category not in days[date]:
+                    days[date][category] = 0
+        
+        return {
+            "status": "success",
+            "data": {
+                "days": days,
+                "categories": list(categories)
+            }
+        }
+            
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        } 
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals() and conn.is_connected():
+            conn.close() 

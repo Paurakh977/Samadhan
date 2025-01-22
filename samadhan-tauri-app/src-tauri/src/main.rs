@@ -11,6 +11,7 @@ use urlencoding;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use once_cell::sync::Lazy;
+use serde_json::Value;
 
 #[derive(Debug, Deserialize)]
 struct TokenResponse {
@@ -643,6 +644,27 @@ async fn fetch_weekly_usage(email: String) -> Result<serde_json::Value, String> 
     }
 }
 
+#[tauri::command]
+async fn fetch_category_screen_time(email: String) -> Result<Value, String> {
+    let serial_id = get_serial_number().map_err(|e| e.to_string())?;
+    let client = reqwest::Client::new();
+    
+    let url = format!("{}/activity/category-screen-time", API_URL);
+    let response = client
+        .get(&url)
+        .query(&[("email", &email), ("serial_id", &serial_id)])
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+        
+    if !response.status().is_success() {
+        return Err("Failed to fetch category screen time data".to_string());
+    }
+    
+    let json = response.json::<Value>().await.map_err(|e| e.to_string())?;
+    Ok(json)
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -657,6 +679,7 @@ fn main() {
             fetch_app_usage_info,
             fetch_all_app_usage,
             fetch_weekly_usage,
+            fetch_category_screen_time,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
