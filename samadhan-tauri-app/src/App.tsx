@@ -129,8 +129,19 @@ function App() {
               <div className="flex flex-col lg:flex-row gap-6">
                 {/* Left Column - Fixed Width */}
                 <div className="w-full lg:w-[300px] lg:min-w-[300px]">
+                  {/* App Usage Distribution - New Section */}
+                  <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6 mb-6">
+                    <div className="flex flex-col gap-1.5 mb-6">
+                      <h2 className="text-zinc-900 text-sm font-semibold">App Usage Distribution</h2>
+                      <p className="text-zinc-500 text-xs font-medium">Your app usage breakdown</p>
+                    </div>
+                    <div className="h-[400px]">
+                      <AppUsageDoughnutChart email={userEmail} />
+                    </div>
+                  </div>
+
                   {/* Screen Time Card */}
-                  <div className="lg:sticky lg:top-6 bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6">
+                  <div className="bg-white rounded-lg shadow-sm border border-zinc-100 p-4 sm:p-6 h-[600px]">
                     <div className="flex flex-col gap-1.5 mb-6">
                       <h2 className="text-zinc-900 text-sm font-semibold">Screen Time</h2>
                       <p className="text-zinc-500 text-xs font-medium">Today's screen time usage</p>

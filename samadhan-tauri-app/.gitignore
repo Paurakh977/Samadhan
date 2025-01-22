@@ -31,9 +31,13 @@ Cargo.lock
 .cargo/
 
 # Environment files
+venv/
+env/
+ENV/
 .env
-.env.*
-!.env.example
+.venv
+env.bak/
+venv.bak/
 
 # Testing
 coverage/
