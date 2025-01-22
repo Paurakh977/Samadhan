@@ -254,9 +254,9 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
       <div className="relative h-3 bg-blue-50/80 backdrop-blur-xl rounded-full progress-bar-3d mb-4">
         <div className="absolute inset-0 flex overflow-hidden rounded-full">
           {appData.map((app, index) => (
-            <motion.div 
+          <motion.div 
               key={index}
-              variants={progressVariants}
+            variants={progressVariants}
               style={{ width: `${app.percentage}%` }} 
               className={`progress-segment bg-gradient-to-r ${
                 index === 0 ? 'from-[#1E3A8A] via-[#1E40AF] to-[#2563EB] rounded-l-full' :
@@ -272,15 +272,15 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
       {/* App List */}
       <div className="space-y-2.5 flex-1">
         {appData.map((app, index) => (
-          <motion.div 
+        <motion.div 
             key={index}
-            variants={appItemVariants}
-            whileHover={{ x: 4 }}
-            className="flex items-center justify-between group hover:bg-blue-50/80 p-2 rounded-xl transition-all duration-300"
-          >
-            <div className="flex items-center gap-3">
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
+          variants={appItemVariants}
+          whileHover={{ x: 4 }}
+          className="flex items-center justify-between group hover:bg-blue-50/80 p-2 rounded-xl transition-all duration-300"
+        >
+          <div className="flex items-center gap-3">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
                 className={`w-9 h-9 ${
                   index === 0 ? 'bg-[#1E293B]' :
                   index === 1 ? 'bg-white border border-blue-100' :
@@ -291,35 +291,35 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
                   <img 
                     src={app.logo_url}
                     alt={app.tab_name}
-                    className="w-5 h-5 object-contain"
+                className="w-5 h-5 object-contain"
                     onError={(e) => {
                       // Fallback icon if image fails to load
                       e.currentTarget.src = "https://images.unsplash.com/photo-1611605698335-8b1569810432?auto=format&fit=crop&q=80&w=100&h=100";
                     }}
                   />
                 ) : (
-                  <Settings className="w-4 h-4 text-white" />
+              <Settings className="w-4 h-4 text-white" />
                 )}
-              </motion.div>
+            </motion.div>
               <span className="font-medium text-[#1E293B] text-sm tracking-tight">{app.tab_name}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <motion.span 
-                whileHover={{ color: "#2563EB" }}
-                className="text-[#64748B] font-medium group-hover:text-[#2563EB] transition-colors duration-300 text-sm"
-              >
+          </div>
+          <div className="flex items-center gap-2">
+            <motion.span 
+              whileHover={{ color: "#2563EB" }}
+              className="text-[#64748B] font-medium group-hover:text-[#2563EB] transition-colors duration-300 text-sm"
+            >
                 {formatTime(app.used_time as number)}
-              </motion.span>
-              <motion.div 
-                whileHover={{ scale: 1.2 }}
+            </motion.span>
+            <motion.div 
+              whileHover={{ scale: 1.2 }}
                 className={`w-2 h-2 rounded-full bg-gradient-to-r ${
                   index === 0 ? 'from-[#1E3A8A] to-[#2563EB]' :
                   index === 1 ? 'from-[#3B82F6] to-[#93C5FD]' :
                   'from-[#60A5FA] to-[#BFDBFE]'
                 } shadow-[0_2px_4px_rgba(37,99,235,0.3)]`}
-              />
-            </div>
-          </motion.div>
+            />
+          </div>
+        </motion.div>
         ))}
       </div>
     </motion.div>

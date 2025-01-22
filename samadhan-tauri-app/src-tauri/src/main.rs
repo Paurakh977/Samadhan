@@ -8,6 +8,9 @@ use winreg::enums::*;
 use winreg::RegKey;
 use serde_json;
 use urlencoding;
+use std::collections::HashMap;
+use std::sync::Mutex;
+use once_cell::sync::Lazy;
 
 #[derive(Debug, Deserialize)]
 struct TokenResponse {
@@ -73,6 +76,45 @@ struct AppUsageWithLogo {
     data: Option<serde_json::Value>,
     error: Option<String>
 }
+
+// App logo URLs dictionary
+static APP_LOGOS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
+    let mut m = HashMap::new();
+    // Entertainment Apps
+    m.insert("Netflix", "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg");
+    m.insert("YouTube", "https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png");
+    m.insert("Spotify", "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg");
+    m.insert("Disney+", "https://upload.wikimedia.org/wikipedia/commons/3/3d/Disney%2B_logo.svg");
+    m.insert("TikTok", "https://upload.wikimedia.org/wikipedia/commons/e/ef/TikTok_logo.svg");
+    m.insert("Twitch", "https://upload.wikimedia.org/wikipedia/commons/2/26/Twitch_logo.svg");
+    
+    // Productivity Apps
+    m.insert("Microsoft 365", "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg");
+    m.insert("Google Workspace", "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg");
+    m.insert("Slack", "https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg");
+    m.insert("Zoom", "https://upload.wikimedia.org/wikipedia/commons/7/7b/Zoom_Communications_Logo.svg");
+    m.insert("Notion", "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png");
+    m.insert("Google Drive", "https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png");
+    
+    // Social Networking Apps
+    m.insert("Facebook", "https://upload.wikimedia.org/wikipedia/commons/6/6c/Facebook_Logo_2023.png");
+    m.insert("Instagram", "https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg");
+    m.insert("X", "https://banner2.cleanpng.com/20240119/sut/transparent-x-logo-logo-brand-identity-company-organization-black-background-white-x-logo-for-1710916376217.webp");
+    m.insert("LinkedIn", "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png");
+    m.insert("WhatsApp", "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg");
+    m.insert("Discord", "https://static.vecteezy.com/system/resources/previews/006/892/625/non_2x/discord-logo-icon-editorial-free-vector.jpg");
+    m.insert("Reddit", "https://redditinc.com/hs-fs/hubfs/Reddit%20Inc/Brand/Reddit_Logo.png");
+    m.insert("Telegram", "https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg");
+    
+    // Other Common Apps
+    m.insert("Google", "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg");
+    m.insert("Microsoft", "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg");
+    m.insert("Apple", "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/135px-Apple_logo_black.svg.png");
+    m.insert("mail", "https://png.pngtree.com/template/20190725/ourmid/pngtree-gmail-logo-png-image_282635.jpg");
+    m.insert("Hamro Patro","https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Hamro_Patro_wordmark.svg/1200px-Hamro_Patro_wordmark.svg.png");
+    m.insert("GitLab", "data:image/png;base64,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");
+    m
+});
 
 #[tauri::command]
 fn get_serial_number() -> Result<String, String> {
@@ -415,6 +457,14 @@ async fn fetch_app_usage_info(email: String) -> Result<AppUsageWithLogo, String>
 
 // Internal function to fetch app logo
 async fn fetch_app_logo_internal(app_name: String) -> Result<String, String> {
+    // First check if we have the logo URL in our dictionary
+    if let Some(url) = APP_LOGOS.get(app_name.as_str()) {
+        return Ok(url.to_string());
+    }
+
+    println!("not found {}", app_name);  // Added this line to log missing apps
+
+    // If not found in dictionary, try Google Custom Search API
     let query = format!("application logo:{} logo filetype:png", app_name);
     let url = format!(
         "https://www.googleapis.com/customsearch/v1?q={}&key={}&cx={}&searchType=image",
@@ -448,10 +498,6 @@ async fn fetch_app_logo_internal(app_name: String) -> Result<String, String> {
 }
 
 // Cache management functions
-use std::collections::HashMap;
-use std::sync::Mutex;
-use once_cell::sync::Lazy;
-
 static LOGO_CACHE: Lazy<Mutex<HashMap<String, HashMap<String, String>>>> = 
     Lazy::new(|| Mutex::new(HashMap::new()));
 
