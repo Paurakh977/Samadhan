@@ -10,6 +10,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@tauri-apps/api": "^2.0.1",
     "@tauri-apps/plugin-opener": "^2",
     "@types/cal-heatmap": "^3.5.39",
@@ -23,9 +24,11 @@
     "cal-heatmap": "^4.2.4",
     "chart.js": "^4.4.7",
     "d3": "^7.9.0",
+    "date-fns": "^4.1.0",
     "framer-motion": "^11.18.1",
     "lucide-react": "^0.473.0",
     "react": "^18.3.1",
+    "react-calendar": "^5.1.0",
     "react-calendar-heatmap": "^1.9.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",

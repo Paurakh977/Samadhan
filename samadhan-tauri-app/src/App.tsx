@@ -18,6 +18,8 @@ import "./styles/login-signup-form.css";
 import "./styles/heatmap.css";
 import "./styles/cal-heatmap.css";
 import GoalsList from "./components/GoalsList";
+import SidebarItem from "./components/ui/Sidebar";
+import CalendarComponent from "./components/Calendar";
 
 interface LoginStatus {
   is_logged_in: boolean;
@@ -236,6 +238,26 @@ function App() {
         </div>
       );
     }
+    if (currentView === 'calendar') {
+      return (
+        <div className="h-screen flex flex-col bg-[#fafafa]">
+          {/* Header */}
+          <div className="px-4 sm:px-8 py-6 bg-[#fafafa] border-b border-zinc-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-1">Calendar</h2>
+                <p className="text-sm text-gray-500">Manage your daily activities and goals</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+            <CalendarComponent />
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="h-full flex flex-col px-6 pt-6">
         <Stats />
@@ -262,12 +284,13 @@ function App() {
         ) : showSidebar ? (
           <div className="flex h-screen overflow-hidden">
             <div className="flex-shrink-0">
-              <Sidebar 
-                currentView={currentView} 
-                userEmail={userEmail}
-                username={username}
-                onLogout={handleLogout}
-              />
+              <Sidebar>
+                <SidebarItem onClick={() => setCurrentView('home')}>Home</SidebarItem>
+                <SidebarItem onClick={() => setCurrentView('analytics')}>Analytics</SidebarItem>
+                <SidebarItem onClick={() => setCurrentView('goals')}>Goals</SidebarItem>
+                <SidebarItem onClick={() => setCurrentView('calendar')}>Schedule</SidebarItem>
+                <SidebarItem onClick={() => setCurrentView('settings')}>Settings</SidebarItem>
+              </Sidebar>
             </div>
             <div className="flex-1 min-w-0">
               {renderContent()}

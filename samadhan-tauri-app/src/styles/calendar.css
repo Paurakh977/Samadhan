@@ -1,0 +1,14 @@
+/* src/components/Calendar.css */
+.react-calendar {
+    border: none;
+  }
+
+.react-calendar__month-view__days__day {
+padding: 10px;
+border-radius: 8px;
+transition: background-color 0.2s;
+}
+
+.react-calendar__month-view__days__day:hover {
+background-color: #f0f0f0; /* Light hover effect */
+}
