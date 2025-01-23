@@ -20,6 +20,7 @@ import "./styles/cal-heatmap.css";
 import GoalsList from "./components/GoalsList";
 import SidebarItem from "./components/ui/Sidebar";
 import CalendarComponent from "./components/Calendar";
+import Settings from "./components/Settings";
 
 interface LoginStatus {
   is_logged_in: boolean;
@@ -260,6 +261,26 @@ function App() {
         </div>
       );
     }
+    if (currentView === 'settings') {
+
+      
+      return(<div className="h-screen flex flex-col bg-[#fafafa]">
+        {/* Header */}
+        <div className="px-4 sm:px-8 py-6 bg-[#fafafa] border-b border-zinc-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-1">Settings</h2>
+              <p className="text-sm text-gray-500">Change your application settings and preferences</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+          <Settings/>
+        </div>
+      </div>) ;
+    }
     return (
       <div className="h-full flex flex-col px-6 pt-6">
         <Stats />
@@ -286,9 +307,7 @@ function App() {
         ) : showSidebar ? (
           <div className="flex h-screen overflow-hidden">
             <div className="flex-shrink-0">
-              <Sidebar onLogout={handleLogout} userEmail={userEmail} username={username}>
-                {/* Remove the SidebarItem children as they are now handled within Sidebar component */}
-              </Sidebar>
+              <Sidebar onLogout={handleLogout} userEmail={userEmail} username={username} />
             </div>
             <div className="flex-1 min-w-0">
               {renderContent()}
