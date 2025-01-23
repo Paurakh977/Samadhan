@@ -241,7 +241,7 @@ function App() {
         </div>
       );
     }
-    if (currentView === 'calendar') {
+    if (currentView === 'schedule') {
       return (
         <div className="h-screen flex flex-col bg-[#fafafa]">
           {/* Header */}

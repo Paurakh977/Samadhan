@@ -256,7 +256,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home', userEmail, user
             </svg>}
             label="Schedule"
             active={activeTab === 'schedule'}
-            onClick={() => handleTabChange('calendar')}
+            onClick={() => handleTabChange('schedule')}
             isExpanded={isExpanded}
           />
           <NavItem
