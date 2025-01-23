@@ -266,7 +266,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home', userEmail, user
             </svg>}
             label="Settings"
             active={activeTab === 'settings'}
-            onClick={() => setActiveTab('settings')}
+            onClick={() => handleTabChange('settings')}
             isExpanded={isExpanded}
           />
         </motion.nav>
