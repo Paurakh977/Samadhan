@@ -187,15 +187,15 @@ async def get_all_app_usage(email: str, serial_id: str):
     try:
         # Get today's data
         today_data = get_app_usage_info(email, serial_id, "today")
-        print(f"Today's data: {today_data}")
+       
 
         # Get yesterday's data
         yesterday_data = get_app_usage_info(email, serial_id, "yesterday")
-        print(f"Yesterday's data: {yesterday_data}")
+        
 
         # Get this week's data
         this_week_data = get_app_usage_info(email, serial_id, "this_week")
-        print(f"This week's data: {this_week_data}")
+      
 
         response_data = {
             "success": True,
@@ -205,7 +205,7 @@ async def get_all_app_usage(email: str, serial_id: str):
                 "this_week": this_week_data
             }
         }
-        print(f"Sending response: {response_data}")
+       
         return response_data
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -220,7 +220,7 @@ def get_app_usage_info(email: str, serial_id: str, period: str) -> Dict:
         cursor = conn.cursor(dictionary=True)
         
         date_ranges = get_date_ranges()
-        print(f"Date ranges: {date_ranges}")  # Debug log
+        
         
         # Get the appropriate date based on period
         if period == "today":
@@ -267,16 +267,15 @@ def get_app_usage_info(email: str, serial_id: str, period: str) -> Dict:
             """
             params = (email, serial_id, date_ranges["week_start"], date_ranges["today"])
 
-        print(f"Executing query: {query}")  # Debug log
-        print(f"Query params: {params}")    # Debug log
+        
         
         cursor.execute(query, params)
         apps_data = cursor.fetchall()
-        print(f"Raw apps data from DB: {apps_data}")  # Debug log
+       
 
         # Calculate total time
         total_time = sum(app['used_time'] for app in apps_data) if apps_data else 0
-        print(f"Total time calculated: {total_time}")  # Debug log
+      
 
         # If no data found, return empty structure
         if not apps_data:
@@ -313,7 +312,7 @@ def get_app_usage_info(email: str, serial_id: str, period: str) -> Dict:
             "apps": processed_apps,
             "total_time": int(total_time)  # Convert to int to avoid decimal issues
         }
-        print(f"Final processed result: {result}")  # Debug log
+       
         return result
 
     except Exception as e:
@@ -649,6 +648,155 @@ async def get_category_screen_time(email: str, serial_id: str):
             "status": "error",
             "message": str(e)
         } 
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals() and conn.is_connected():
+            conn.close() 
+
+@router.post("/events")
+async def add_event(
+    email: str = Query(...),
+    start_time: str = Query(...),
+    end_time: str = Query(...),
+    event_title: str = Query(...),
+    description: str = Query(...),
+    event_date: str = Query(...),
+):
+    """Add a new calendar event"""
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # First insert the event
+        event_day = datetime.strptime(event_date, "%Y-%m-%d").strftime("%A")
+
+        insert_query = """
+            INSERT INTO events 
+            (start_time, end_time, event_title, description, user_id, event_date, event_day)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        
+        cursor.execute(insert_query, (
+            start_time,
+            end_time,
+            event_title,
+            description,
+            email,
+            event_date,
+            event_day
+        ))
+        
+        # Get the last insert ID and commit
+        last_id = cursor.lastrowid
+        conn.commit()
+
+        # Close the current cursor and create a new one for fetching
+        cursor.close()
+        cursor = conn.cursor(dictionary=True)
+
+        # Fetch the newly created event
+        select_query = """
+            SELECT id, start_time, end_time, event_title, description, event_date, event_day
+            FROM events
+            WHERE id = %s
+        """
+        cursor.execute(select_query, (last_id,))
+        new_event = cursor.fetchone()
+        
+        # Make sure to fetch all results
+        cursor.fetchall()  # Clear any remaining results
+        
+        if new_event:
+            return {
+                "success": True,
+                "data": {
+                    "id": new_event['id'],
+                    "start_time": new_event['start_time'],
+                    "end_time": new_event['end_time'],
+                    "title": new_event['event_title'],
+                    "description": new_event['description'],
+                    "date": event_date,
+                    "day": new_event['event_day']
+                }
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Failed to fetch the newly created event"
+            }
+
+    except Exception as e:
+        if conn and conn.is_connected():
+            conn.rollback()
+        return {
+            "success": False,
+            "error": str(e)
+        }
+    finally:
+        try:
+            if cursor:
+                # Handle any unread results before closing
+                if not cursor._have_unread_result():
+                    cursor.close()
+            if conn and conn.is_connected():
+                conn.close()
+        except Exception as e:
+            print(f"Error in cleanup: {str(e)}")
+
+@router.get("/events")
+async def get_events(email: str = Query(...)):
+    """Get all calendar events for a user"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        query = """
+            SELECT 
+                id,
+                start_time,
+                end_time,
+                event_title,
+                description,
+                event_date,
+                event_day
+            FROM events
+            WHERE user_id = %s  -- Using email as user_id
+            ORDER BY event_date ASC, start_time ASC
+        """
+        
+        cursor.execute(query, (email,))
+        events = cursor.fetchall()
+        
+        # Format the events
+        formatted_events = []
+        for event in events:
+            event_date = event['event_date']
+            if isinstance(event_date, datetime):
+                event_date = event_date.strftime("%Y-%m-%d")
+                
+            formatted_events.append({
+                "id": event['id'],
+                "start_time": event['start_time'],
+                "end_time": event['end_time'],
+                "title": event['event_title'],
+                "description": event['description'],
+                "date": event_date,
+                "day": event['event_day']
+            })
+        
+        return {
+            "success": True,
+            "data": formatted_events
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
     finally:
         if 'cursor' in locals():
             cursor.close()

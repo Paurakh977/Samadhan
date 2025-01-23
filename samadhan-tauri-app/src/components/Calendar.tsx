@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import type { Value } from 'react-calendar/dist/cjs/shared/types';
 import ReactCalendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import '../styles/calendar.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Value } from 'react-calendar/dist/cjs/shared/types';
+import { invoke } from '@tauri-apps/api/core';
 
 interface CalendarProps {
   isExpanded: boolean;
+  email: string;
 }
 
 interface Event {
@@ -17,8 +20,28 @@ interface Event {
   description: string;
 }
 
-function CalendarComponent({ isExpanded }: CalendarProps) {
-  const [date, setDate] = useState(new Date());
+interface FetchEventsResponse {
+  success: boolean;
+  data?: any[];
+  error?: string;
+}
+
+interface EventResponse {
+  success: boolean;
+  data?: {
+    id: number;
+    start_time: string;
+    end_time: string;
+    title: string;
+    description: string;
+    date: string;
+    day: string;
+  };
+  error?: string;
+}
+
+function CalendarComponent({ isExpanded, email }: CalendarProps) {
+  const [date, setDate] = useState<Date>(new Date());
   const [showEventForm, setShowEventForm] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -28,8 +51,39 @@ function CalendarComponent({ isExpanded }: CalendarProps) {
     title: '',
     description: ''
   });
+  const [isLoading, setIsLoading] = useState(true);
   
-  const handleDateChange = (value: Date | null) => {
+  // Fetch events from backend
+  const fetchEvents = async () => {
+    try {
+      const response = await invoke<FetchEventsResponse>('fetch_calendar_events', { email });
+      
+      if (response.success && response.data) {
+        const formattedEvents = response.data.map(event => ({
+          id: event.id.toString(),
+          date: new Date(event.date + 'T00:00:00'), // Add time to ensure correct date
+          startTime: event.start_time,
+          endTime: event.end_time,
+          title: event.title,
+          description: event.description
+        }));
+        setEvents(formattedEvents);
+      } else {
+        console.error('Failed to fetch events:', response.error);
+      }
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch events on component mount and when email changes
+  useEffect(() => {
+    fetchEvents();
+  }, [email]);
+
+  const handleDateChange = (value: Date | [Date, Date] | null, event: React.MouseEvent<HTMLButtonElement>) => {
     if (value instanceof Date) {
       setDate(value);
       setSelectedDate(value);
@@ -41,25 +95,54 @@ function CalendarComponent({ isExpanded }: CalendarProps) {
     setShowEventForm(true);
   };
 
-  const handleSaveEvent = (e: React.FormEvent) => {
+  const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate) return;
 
-    const event: Event = {
-      id: Math.random().toString(36).substr(2, 9),
-      date: selectedDate,
-      ...newEvent
-    };
+    try {
+      // Create a new date object and ensure it's in local time
+      const eventDate = new Date(selectedDate);
+      eventDate.setMinutes(eventDate.getMinutes() - eventDate.getTimezoneOffset());
+      
+      // Format date in YYYY-MM-DD format
+      const formattedDate = eventDate.toISOString().split('T')[0];
+      
+      const eventDetails = {
+        email,
+        startTime: newEvent.startTime,
+        endTime: newEvent.endTime,
+        eventTitle: newEvent.title,
+        description: newEvent.description,
+        eventDate: formattedDate
+      };
 
-    setEvents([...events, event]);
-    setShowEventForm(false);
-    setNewEvent({ startTime: '', endTime: '', title: '', description: '' });
+      const response = await invoke<EventResponse>('add_calendar_event', eventDetails);
+
+      if (response.success && response.data) {
+        // First close the form and reset it
+        setShowEventForm(false);
+        setNewEvent({ startTime: '', endTime: '', title: '', description: '' });
+        
+        // Then update the events list
+        await fetchEvents();
+      } else {
+        const errorMessage = response.error || 'Failed to save event';
+        console.error('Failed to add event:', errorMessage);
+        alert(`Failed to save event: ${errorMessage}`);
+      }
+    } catch (error) {
+      console.error('Exception in handleSaveEvent:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Failed to save event: ${errorMessage}`);
+    }
   };
 
-  const getEventsForDate = (date: Date) => {
-    return events.filter(event => 
-      event.date.toDateString() === date.toDateString()
-    );
+  const getEventsForDate = (dateToCheck: Date): Event[] => {
+    return events.filter(event => {
+      const eventDate = event.date.toDateString();
+      const compareDate = dateToCheck.toDateString();
+      return eventDate === compareDate;
+    });
   };
 
   const tileContent = ({ date }: { date: Date }) => {
@@ -67,8 +150,8 @@ function CalendarComponent({ isExpanded }: CalendarProps) {
     if (dateEvents.length > 0) {
       return (
         <div className="multiple-dots">
-          {Array.from({ length: Math.min(dateEvents.length, 3) }).map((_, i) => (
-            <div key={i} className="dot" />
+          {dateEvents.slice(0, 3).map((event, i) => (
+            <div key={`${date.toISOString()}-${event.id || i}-${i}`} className="dot" />
           ))}
         </div>
       );
@@ -93,19 +176,19 @@ function CalendarComponent({ isExpanded }: CalendarProps) {
             <h2 className="calendar-title">
               {date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
               <div className="month-nav">
-                <button onClick={() => {
+                <button onClick={(e) => {
                   const newDate = new Date(date);
                   newDate.setMonth(date.getMonth() - 1);
-                  setDate(newDate);
+                  handleDateChange(newDate, e);
                 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M15 18l-6-6 6-6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
-                <button onClick={() => {
+                <button onClick={(e) => {
                   const newDate = new Date(date);
                   newDate.setMonth(date.getMonth() + 1);
-                  setDate(newDate);
+                  handleDateChange(newDate, e);
                 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M9 18l6-6-6-6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>

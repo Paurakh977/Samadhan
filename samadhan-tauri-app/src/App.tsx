@@ -256,7 +256,7 @@ function App() {
 
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
-            <CalendarComponent />
+            <CalendarComponent isExpanded={true} email={userEmail} />
           </div>
         </div>
       );

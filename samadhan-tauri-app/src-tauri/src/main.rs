@@ -196,7 +196,7 @@ async fn handle_google_login(serialId: String) -> Result<GoogleLoginResponse, St
 
     if response.status().is_success() {
         let data: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
-        println!("Response data: {:?}", data); // Debug log
+        
         
         let email = data.get("email")
             .and_then(|v| v.as_str())
@@ -235,7 +235,7 @@ async fn handle_google_signup(serialId: String) -> Result<GoogleLoginResponse, S
 
     if response.status().is_success() {
         let data: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
-        println!("Response data: {:?}", data); // Debug log
+        
         
         let email = data.get("email")
             .and_then(|v| v.as_str())
@@ -530,13 +530,11 @@ fn cache_logo(cache_key: &str, app_name: &str, logo_url: &str) {
 
 #[tauri::command]
 async fn fetch_all_app_usage(email: String) -> Result<AppUsageWithLogo, String> {
-    println!("Fetching app usage for email: {}", email);
     let serial_id = get_serial_number()?;
-    println!("Serial ID: {}", serial_id);
-    
+   
     let client = reqwest::Client::new();
     let url = format!("http://localhost:5000/api/v1/activity/app-usage-all");
-    println!("Making request to: {}", url);
+    
     
     let response = client
         .get(&url)
@@ -548,7 +546,7 @@ async fn fetch_all_app_usage(email: String) -> Result<AppUsageWithLogo, String> 
         .await
         .map_err(|e| format!("Failed to send request: {}", e))?;
 
-    println!("Response status: {}", response.status());
+    
     
     if response.status().is_success() {
         let mut data = response
@@ -592,7 +590,7 @@ async fn fetch_all_app_usage(email: String) -> Result<AppUsageWithLogo, String> 
             }
         }
         
-        println!("Processed data: {:?}", data);
+        
         
         Ok(AppUsageWithLogo {
             success: true,
@@ -665,6 +663,70 @@ async fn fetch_category_screen_time(email: String) -> Result<Value, String> {
     Ok(json)
 }
 
+#[tauri::command]
+async fn add_calendar_event(
+    email: String,
+    start_time: String,
+    end_time: String,
+    event_title: String,
+    description: String,
+    event_date: String,
+) -> Result<Value, String> {
+    let client = reqwest::Client::new();
+    
+    let response = client
+        .post(&format!("{}/activity/events", API_URL))
+        .query(&[
+            ("email", &email),
+            ("start_time", &start_time),
+            ("end_time", &end_time),
+            ("event_title", &event_title),
+            ("description", &description),
+            ("event_date", &event_date),
+        ])
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if response.status().is_success() {
+        response
+            .json::<Value>()
+            .await
+            .map_err(|e| e.to_string())
+    } else {
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Unknown error".to_string());
+        Err(format!("Failed to add event: {}", error_text))
+    }
+}
+
+#[tauri::command]
+async fn fetch_calendar_events(email: String) -> Result<Value, String> {
+    let client = reqwest::Client::new();
+    
+    let response = client
+        .get(&format!("{}/activity/events", API_URL))
+        .query(&[("email", &email)])
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if response.status().is_success() {
+        response
+            .json::<Value>()
+            .await
+            .map_err(|e| e.to_string())
+    } else {
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Unknown error".to_string());
+        Err(format!("Failed to fetch events: {}", error_text))
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -680,6 +742,8 @@ fn main() {
             fetch_all_app_usage,
             fetch_weekly_usage,
             fetch_category_screen_time,
+            add_calendar_event,
+            fetch_calendar_events,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
