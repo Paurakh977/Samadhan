@@ -121,7 +121,7 @@ const ActivityHeatmap = ({ data = defaultData }: ActivityHeatmapProps) => {
             }}
           />
           
-          <div className="flex items-center gap-2 text-[11px] text-[#57606a] mt-2 ml-[580px]">
+          <div className="flex items-center justify-end gap-2 text-[11px] text-[#57606a] mt-2">
             <span className="font-light">Less</span>
             <div className="flex gap-[3px]">
               {legendColors.map((color) => (

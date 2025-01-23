@@ -206,21 +206,23 @@ function App() {
 
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
-            <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-wrap w-full gap-6">
               {/* Left Column - Daily Goals */}
-              <div className="w-full lg:w-[300px] lg:min-w-[300px]">
-                <div className="bg-white rounded-lg  h-[400px]">
+              <div className="w-full lg:w-[300px] shrink-0">
+                <div className="bg-white rounded-lg shadow-sm h-[400px]">
                   <GoalsList />
                 </div>
               </div>
 
               {/* Right Column - Activity Contributions */}
-              <div className="bg-white rounded-lg shadow-lg border border-zinc-100 p-6 flex-1">
-                <div className="flex flex-col gap-1.5 mb-6">
-                  <h2 className="text-zinc-900 text-sm font-semibold">Activity Contributions</h2>
-                  <p className="text-zinc-500 text-xs font-medium">Your daily app usage activity over the past year</p>
+              <div className="flex-1 min-w-0">
+                <div className="bg-white rounded-lg shadow-lg border border-zinc-100 p-6 h-[400px]">
+                  <div className="flex flex-col gap-1.5 mb-6">
+                    <h2 className="text-zinc-900 text-sm font-semibold">Activity Contributions</h2>
+                    <p className="text-zinc-500 text-xs font-medium">Your daily app usage activity over the past year</p>
+                  </div>
+                  <ActivityHeatmap data={heatmapData} />
                 </div>
-                <ActivityHeatmap data={heatmapData} />
               </div>
             </div>
 
@@ -284,12 +286,8 @@ function App() {
         ) : showSidebar ? (
           <div className="flex h-screen overflow-hidden">
             <div className="flex-shrink-0">
-              <Sidebar>
-                <SidebarItem onClick={() => setCurrentView('home')}>Home</SidebarItem>
-                <SidebarItem onClick={() => setCurrentView('analytics')}>Analytics</SidebarItem>
-                <SidebarItem onClick={() => setCurrentView('goals')}>Goals</SidebarItem>
-                <SidebarItem onClick={() => setCurrentView('calendar')}>Schedule</SidebarItem>
-                <SidebarItem onClick={() => setCurrentView('settings')}>Settings</SidebarItem>
+              <Sidebar onLogout={handleLogout} userEmail={userEmail} username={username}>
+                {/* Remove the SidebarItem children as they are now handled within Sidebar component */}
               </Sidebar>
             </div>
             <div className="flex-1 min-w-0">

@@ -280,30 +280,31 @@ const ScreenTimeBarChart = memo(({ width, height, email }: Props) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 5 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="fixed z-50 p-3.5 text-[13px] bg-white rounded-lg shadow-lg pointer-events-none border border-gray-100/50 backdrop-blur-sm min-w-[180px]"
+            className="fixed z-50 p-2.5 text-[13px] bg-white/95 rounded-lg shadow-sm pointer-events-none border border-gray-100/50 backdrop-blur-sm mb-8"
             style={{
               left: tooltipData.x + 10,
-              top: tooltipData.y,
-              backgroundColor: 'rgba(255, 255, 255, 0.98)',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04)'
+              top: Math.min(tooltipData.y - 10, window.innerHeight - 200), // Ensure tooltip doesn't go off screen
+              minWidth: '160px',
+              maxWidth: '200px',
+              transform: `translateY(${tooltipData.y > window.innerHeight - 200 ? '-100%' : '0'})`
             }}
           >
-            <div className="font-medium text-gray-900 mb-2.5 pb-1.5 border-b border-gray-100">
+            <div className="font-medium text-gray-900 mb-2 pb-1.5 border-b border-gray-100">
               {tooltipData.day}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 pt-1">
               {categories.map(category => (
-                <div key={category} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
+                <div key={category} className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
                     <div 
-                      className="w-2.5 h-2.5 rounded-[3px]"
+                      className="w-2 h-2 rounded-[2px]"
                       style={{ backgroundColor: colors[category] }}
                     />
-                    <span className="text-gray-700 font-medium tracking-tight">
+                    <span className="text-gray-700 text-[12px] font-medium tracking-tight">
                       {categoryLabels[category]}
                     </span>
                   </div>
-                  <span className="font-semibold text-gray-900 tabular-nums">
+                  <span className="font-medium text-[12px] text-gray-900 tabular-nums">
                     {(() => {
                       const hours = Math.floor(tooltipData.data[category]);
                       const minutes = Math.round((tooltipData.data[category] - hours) * 60);
