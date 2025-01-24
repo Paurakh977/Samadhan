@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { invoke } from '@tauri-apps/api/core';
 import {
   Chart as ChartJS,
@@ -107,6 +107,12 @@ if (typeof document !== 'undefined') {
 }
 
 const AppUsageLineChart = ({ email }: Props) => {
+  const ref = React.useRef(null);
+  const isInView = useInView(ref, {
+    once: true,
+    amount: 0.5,  // Only trigger when 50% of the component is visible
+    margin: "0px 0px 0px 0px"
+  });
   const [hiddenDatasets, setHiddenDatasets] = useState<string[]>([]);
   const [chartData, setChartData] = useState<AppUsageData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -143,6 +149,8 @@ const AppUsageLineChart = ({ email }: Props) => {
         : [...prev, appName]
     );
   };
+
+  if (!isInView) return <div ref={ref} className="h-full" />;
 
   if (isLoading) {
     return (
@@ -318,7 +326,7 @@ const AppUsageLineChart = ({ email }: Props) => {
   };
 
   return (
-    <div className="relative h-full">
+    <div ref={ref} className="relative h-full">
       <div className="absolute top-0 right-0 flex items-center gap-3">
         {chartData.map((app) => {
           return (

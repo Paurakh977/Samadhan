@@ -71,6 +71,11 @@ function App() {
   useEffect(() => {
     const handleViewChange = (event: CustomEvent) => {
       setCurrentView(event.detail);
+      // Reset scroll position of the main content container
+      const mainContent = document.querySelector('.overflow-y-auto');
+      if (mainContent) {
+        mainContent.scrollTo(0, 0);
+      }
     };
 
     window.addEventListener('viewChange', handleViewChange as EventListener);

@@ -181,10 +181,10 @@ const DailyActivityChart: React.FC<{ email: string }> = ({ email }) => {
       const hourStr = hour.toString();
       return {
         hour,
-        social: Math.max(0, ((rawData['Social Networking']?.[hourStr] || 0) / normalizer) * 0.3),
-        entertainment: Math.max(0, ((rawData['Entertainment']?.[hourStr] || 0) / normalizer) * 0.3),
-        productivity: Math.max(0, ((rawData['Productivity']?.[hourStr] || 0) / normalizer) * 0.3),
-        other: Math.max(0, ((rawData['Others']?.[hourStr] || 0) / normalizer) * 0.3)
+        social: Math.max(0, ((rawData['Social Networking']?.[hourStr] || 0) / normalizer) * 0.7),
+        entertainment: Math.max(0, ((rawData['Entertainment']?.[hourStr] || 0) / normalizer) * 0.7),
+        productivity: Math.max(0, ((rawData['Productivity']?.[hourStr] || 0) / normalizer) * 0.7),
+        other: Math.max(0, ((rawData['Others']?.[hourStr] || 0) / normalizer) * 0.7)
       };
     });
 

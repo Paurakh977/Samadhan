@@ -1,5 +1,5 @@
-import { useState, memo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, memo, useEffect } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { Bar } from '@visx/shape';
 import { Group } from '@visx/group';
 import { scaleBand, scaleLinear } from '@visx/scale';
@@ -45,6 +45,12 @@ interface TooltipData {
 }
 
 const ScreenTimeBarChart = memo(({ width, height, email }: Props) => {
+  const ref = React.useRef(null);
+  const isInView = useInView(ref, {
+    once: true,
+    amount: 0.5,  // Only trigger when 50% of the component is visible
+    margin: "0px 0px 0px 0px"
+  });
   const [hoveredBar, setHoveredBar] = useState<string | null>(null);
   const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
   const [data, setData] = useState<ScreenTimeData[]>([]);
@@ -134,6 +140,8 @@ const ScreenTimeBarChart = memo(({ width, height, email }: Props) => {
     setTooltipData(null);
   };
 
+  if (!isInView) return <div ref={ref} className="h-full" />;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -163,7 +171,7 @@ const ScreenTimeBarChart = memo(({ width, height, email }: Props) => {
   }
 
   return (
-    <div className="relative">
+    <div ref={ref} className="relative">
       {/* Legend with original animation */}
       <motion.div 
         initial={{ opacity: 0, y: -5 }}
