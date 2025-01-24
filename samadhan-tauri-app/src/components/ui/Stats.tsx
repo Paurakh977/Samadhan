@@ -1,6 +1,8 @@
 import { Smartphone, Layout, BrainCircuit, Zap } from 'lucide-react';
 import { formatNumber, formatTime } from '../../lib/utils';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
 interface StatCardProps {
   className?: string;
@@ -15,40 +17,16 @@ function StatCard({ className, children }: StatCardProps) {
   );
 }
 
-const stats = [
-  {
-    name: 'Total Screen Time',
-    value: 165, // in minutes
-    icon: Smartphone,
-    change: '+12.5%',
-    changeType: 'increase',
-    format: 'time',
-  },
-  {
-    name: 'Focus Time',
-    value: 85, // in minutes
-    icon: BrainCircuit,
-    change: '+28.2%',
-    changeType: 'increase',
-    format: 'time',
-  },
-  {
-    name: 'Pickups',
-    value: 4,
-    icon: Layout,
-    change: '-4.1%',
-    changeType: 'decrease',
-    format: 'number',
-  },
-  {
-    name: 'Productivity Score',
-    value: 78,
-    icon: Zap,
-    change: '+15.5%',
-    changeType: 'increase',
-    format: 'score',
-  },
-];
+interface AppUsageData {
+  name: string;
+  used_time: number;
+  color?: string;
+}
+
+interface UsageData {
+  apps: AppUsageData[];
+  total_time: number;
+}
 
 const containerVariants = {
   hidden: { 
@@ -84,7 +62,106 @@ const cardVariants = {
   }
 };
 
-export function Stats() {
+interface StatsProps {
+  email?: string;
+}
+
+export function Stats({ email }: StatsProps) {
+  const [screenTime, setScreenTime] = useState<number>(0);
+  const [focusTime, setFocusTime] = useState<number>(85);
+  const [pickups, setPickups] = useState<number>(4);
+  const [productivityScore, setProductivityScore] = useState<number>(78);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [changePercentage, setChangePercentage] = useState<string>('+12.5%');
+  const [changeType, setChangeType] = useState<'increase' | 'decrease'>('increase');
+
+  useEffect(() => {
+    const fetchScreenTime = async () => {
+      if (!email) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await invoke<{
+          success: boolean;
+          data: {
+            data: {
+              today: UsageData;
+              yesterday: UsageData;
+              this_week: UsageData;
+            };
+          };
+          error?: string;
+        }>('fetch_all_app_usage', { email });
+
+        if (response.success && response.data) {
+          // Convert seconds to minutes and round to nearest integer
+          const totalMinutes = Math.round(response.data.data.today.total_time / 60);
+          setScreenTime(totalMinutes);
+          
+          // Calculate the percentage change
+          const todayTime = response.data.data.today.total_time;
+          const yesterdayTime = response.data.data.yesterday.total_time;
+          const percentageChange = yesterdayTime > 0 
+            ? ((todayTime - yesterdayTime) / yesterdayTime) * 100 
+            : 0;
+
+          // Update the change percentage and type
+          const formattedChange = `${percentageChange >= 0 ? '+' : ''}${percentageChange.toFixed(1)}%`;
+          setChangePercentage(formattedChange);
+          setChangeType(percentageChange >= 0 ? 'increase' : 'decrease');
+        } else {
+          setError(response.error || 'Failed to fetch data');
+        }
+      } catch (error) {
+        console.error('Error fetching screen time:', error);
+        setError('Failed to fetch data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchScreenTime();
+  }, [email]);
+
+  const stats = [
+    {
+      name: 'Total Screen Time',
+      value: screenTime,
+      icon: Smartphone,
+      change: changePercentage,
+      changeType: changeType,
+      format: 'time' as const,
+      isLoading: isLoading,
+    },
+    {
+      name: 'Focus Time',
+      value: focusTime,
+      icon: BrainCircuit,
+      change: '+28.2%',
+      changeType: 'increase' as const,
+      format: 'time' as const,
+    },
+    {
+      name: 'Pickups',
+      value: pickups,
+      icon: Layout,
+      change: '-4.1%',
+      changeType: 'decrease' as const,
+      format: 'number' as const,
+    },
+    {
+      name: 'Productivity Score',
+      value: productivityScore,
+      icon: Zap,
+      change: '+15.5%',
+      changeType: 'increase' as const,
+      format: 'score' as const,
+    },
+  ];
+
   return (
     <motion.div
       variants={containerVariants}
@@ -107,7 +184,9 @@ export function Stats() {
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900 mb-1">
-            {stat.format === 'time' 
+            {stat.isLoading ? (
+              <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
+            ) : stat.format === 'time' 
               ? formatTime(stat.value)
               : stat.format === 'score'
               ? `${stat.value}%`

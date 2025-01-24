@@ -164,7 +164,7 @@ const AppUsageDoughnutChart: React.FC<Props> = ({ email }) => {
     responsive: true,
     maintainAspectRatio: false,
     cutout: '80%',
-    radius: '93%',
+    radius: '98%',
     layout: {
       padding: {
         top: 15,

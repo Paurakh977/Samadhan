@@ -3,13 +3,14 @@ import { motion } from 'framer-motion';
 
 const GoalsList: React.FC = () => {
   const goals = [
-    "Read for 30 minutes",
-    "Exercise for at least 1 hour",
-    "Complete a work project",
-    "Spend quality time with family",
-    "Meditate for 10 minutes",
     "Limit screen time to 2 hours",
-    "Cook a new recipe",
+    "Increase productivity by 10%",
+    "Drop social media usage by 12%",
+    "Limit screen time to 4 hours",
+    "Decrease screen time by 10%",
+    "Drop usage of Youtube by 15%",
+    "Limit usage of Whatsapp by 10%",
+    "Decrease entertainment time by 8%",
   ];
 
   return (

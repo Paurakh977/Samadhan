@@ -123,12 +123,7 @@ function App() {
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">App Usage Analytics</h2>
                 <p className="text-sm text-gray-500">Track and analyze your application usage patterns</p>
               </div>
-              <select className="w-full sm:w-auto bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-600 font-medium hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all">
-                <option value="lastweek">Last week</option>
-                <option value="lastmonth">Last month</option>
-                <option value="last3months">Last 3 months</option>
-                <option value="last6months">Last 6 months</option>
-              </select>
+              
             </div>
           </div>
           
@@ -288,15 +283,15 @@ function App() {
     }
     return (
       <div className="h-full flex flex-col px-6 pt-6">
-        <Stats />
+        <Stats email={userEmail} />
         <div className="flex gap-6 mt-2 flex-1">
           <ScreenTimeProgress
-            startHour={3}
-            startMinute={25}
-            startPeriod="PM"
-            endHour={1}
-            endMinute={10}
-            endPeriod="AM"
+            startHour={12}
+            startMinute={13}
+            startPeriod="AM"
+            endHour={new Date().getHours() % 12 || 12}
+            endMinute={new Date().getMinutes()}
+            endPeriod={new Date().getHours() >= 12 ? "PM" : "AM"} 
           />
           <DailyActivityChart email={userEmail} />
         </div>

@@ -6,6 +6,8 @@ export function formatNumber(value: number): string {
 }
 
 export function formatTime(minutes: number): string {
+  // Round minutes to nearest integer
+  minutes = Math.round(minutes);
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   if (hours === 0) {
