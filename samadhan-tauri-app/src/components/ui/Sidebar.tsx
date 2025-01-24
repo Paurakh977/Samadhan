@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { invoke } from '@tauri-apps/api/core';
-
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -68,6 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home', userEmail, user
   const [activeTab, setActiveTab] = React.useState(currentView);
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [isLoaded, setIsLoaded] = React.useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>('/icon.png');
 
   React.useEffect(() => {
     setActiveTab(currentView);
@@ -111,9 +111,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home', userEmail, user
             transition={{ duration: 0.2 }}
           >
             <motion.img 
-              src="/src/assets/icon.png"
+              src={logoUrl}
               alt="Samadhan"
               className="w-5 h-5 rounded-lg"
+              onError={() => {
+                if (logoUrl === '/icon.png') {
+                  setLogoUrl('./src-tauri/icons/icon.png');
+                }
+              }}
             />
           </motion.div>
           <AnimatePresence mode="wait">
