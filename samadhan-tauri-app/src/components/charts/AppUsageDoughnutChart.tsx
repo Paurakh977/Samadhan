@@ -231,6 +231,7 @@ const AppUsageDoughnutChart: React.FC<Props> = ({ email }) => {
         usePointStyle: true,
         cornerRadius: 6,
         caretSize: 0,
+        z: 50,
         callbacks: {
           title: (tooltipItems: any) => {
             const item = tooltipItems[0];
@@ -273,13 +274,13 @@ const AppUsageDoughnutChart: React.FC<Props> = ({ email }) => {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-2">
         <UltraModernDropdown 
           value={selectedPeriod}
           onChange={(value) => setSelectedPeriod(value as typeof selectedPeriod)}
         />
       </div>
-      <div className="relative flex-1">
+      <div className="relative h-[calc(100%-120px)]">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -289,15 +290,19 @@ const AppUsageDoughnutChart: React.FC<Props> = ({ email }) => {
             {error}
           </div>
         ) : currentData ? (
-          <Doughnut 
-            ref={(element) => {
-              if (element) {
-                chartRef.current = element;
-              }
-            }}
-            data={data}
-            options={options}
-          />
+          <div className="h-full w-full flex items-center justify-center">
+            <div className="w-[85%] h-[85%]">
+              <Doughnut 
+                ref={(element) => {
+                  if (element) {
+                    chartRef.current = element;
+                  }
+                }}
+                data={data}
+                options={options}
+              />
+            </div>
+          </div>
         ) : null}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center transition-all duration-700 ease-in-out group">
@@ -323,11 +328,11 @@ const AppUsageDoughnutChart: React.FC<Props> = ({ email }) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap gap-1.5 justify-center mt-5">
+      <div className="flex flex-wrap gap-1.5 justify-center mt-2 h-[80px] overflow-y-auto px-2">
         {chartData.map((app, index) => (
           <div 
             key={app.name}
-            className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50/40 rounded-md hover:bg-zinc-100/60 transform transition-all duration-700 ease-in-out hover:translate-y-[-1px] hover:shadow-sm cursor-pointer group"
+            className="flex items-center gap-1.5 px-2 py-0.5 bg-zinc-50/40 rounded-md hover:bg-zinc-100/60 transform transition-all duration-700 ease-in-out hover:translate-y-[-1px] hover:shadow-sm cursor-pointer group"
             onMouseEnter={() => {
               if (chartRef.current) {
                 const chart = chartRef.current;

@@ -33,8 +33,8 @@ const stats = [
     format: 'time',
   },
   {
-    name: 'App Openings',
-    value: 124,
+    name: 'Pickups',
+    value: 4,
     icon: Layout,
     change: '-4.1%',
     changeType: 'decrease',

@@ -172,29 +172,29 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
       {/* Time Display with Dropdown */}
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <AnimatePresence mode="wait">
-            <motion.h1 
-              key={totalTime}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="text-[22px] font-semibold tracking-tight text-gray-900"
-            >
-              {formatTime(totalTime)}
-            </motion.h1>
-          </AnimatePresence>
-          <AnimatePresence mode="wait">
-            <motion.p 
-              key={comparisonText}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="text-gray-500 text-xs font-medium"
-            >
-              {comparisonText}
-            </motion.p>
+          <AnimatePresence>
+            <div key="time-display">
+              <motion.h1 
+                key={totalTime}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="text-[22px] font-semibold tracking-tight text-gray-900"
+              >
+                {formatTime(totalTime)}
+              </motion.h1>
+              <motion.p 
+                key={comparisonText}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-gray-500 text-xs font-medium"
+              >
+                {comparisonText}
+              </motion.p>
+            </div>
           </AnimatePresence>
         </div>
         <UltraModernDropdown 
@@ -205,7 +205,7 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
 
       {/* Enhanced 3D Progress Bar */}
       <div className="relative h-5 bg-blue-50/80 backdrop-blur-xl rounded-full progress-bar-3d mb-4">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <motion.div 
             key={selectedPeriod + totalTime}
             initial={{ width: 0 }}
@@ -249,64 +249,66 @@ const HorizontalChart: React.FC<Props> = ({ email }) => {
 
       {/* App List */}
       <div className="space-y-2.5 flex-1">
-        <AnimatePresence mode="wait">
-          {appData.map((app, index) => (
-            <motion.div 
-              key={app.name + index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="flex items-center justify-between group hover:bg-blue-50/80 p-2 rounded-xl transition-all duration-300"
-            >
-              <div className="flex items-center gap-3">
-                <div 
-                  className={`w-9 h-9 ${
-                    index === 0 ? 'bg-[#1E293B]' :
-                    index === 1 ? 'bg-[#faf1f0] border border-blue-100' :
-                    index === 2 ? 'bg-[#faf1f0]' :
-                    index === 3 ? 'bg-[#faf1f0]' :
-                    'bg-[#faf1f0]'
-                  } rounded-xl flex items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.1)] transform group-hover:scale-105 transition-transform duration-300`}
-                >
-                  {app.logo_url ? (
-                    <img 
-                      src={app.logo_url}
-                      alt={app.name}
-                      className="w-5 h-5 object-contain"
-                      onError={(e) => {
-                        console.log(`Error loading logo for ${app.name}`);
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <Settings className="w-4 h-4 text-gray-400" />
-                  )}
+        <AnimatePresence>
+          <div key="app-list" className="space-y-2.5">
+            {appData.map((app, index) => (
+              <motion.div 
+                key={app.name + index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="flex items-center justify-between group hover:bg-blue-50/80 p-2 rounded-xl transition-all duration-300"
+              >
+                <div className="flex items-center gap-3">
+                  <div 
+                    className={`w-9 h-9 ${
+                      index === 0 ? 'bg-[#1E293B]' :
+                      index === 1 ? 'bg-[#faf1f0] border border-blue-100' :
+                      index === 2 ? 'bg-[#faf1f0]' :
+                      index === 3 ? 'bg-[#faf1f0]' :
+                      'bg-[#faf1f0]'
+                    } rounded-xl flex items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.1)] transform group-hover:scale-105 transition-transform duration-300`}
+                  >
+                    {app.logo_url ? (
+                      <img 
+                        src={app.logo_url}
+                        alt={app.name}
+                        className="w-5 h-5 object-contain"
+                        onError={(e) => {
+                          console.log(`Error loading logo for ${app.name}`);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <Settings className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                  <span className="font-medium text-[#1E293B] text-sm tracking-tight">{app.name}</span>
                 </div>
-                <span className="font-medium text-[#1E293B] text-sm tracking-tight">{app.name}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <motion.span 
-                  key={app.used_time}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-[#64748B] font-medium group-hover:text-[#2563EB] transition-colors duration-300 text-sm"
-                >
-                  {formatTime(app.used_time)}
-                </motion.span>
-                <div 
-                  className={`w-2 h-2 rounded-full bg-gradient-to-r ${
-                    index === 0 ? 'from-[#1E3A8A] to-[#2563EB]' :
-                    index === 1 ? 'from-[#3B82F6] to-[#93C5FD]' :
-                    index === 2 ? 'from-[#60A5FA] to-[#BFDBFE]' :
-                    index === 3 ? 'from-[#93C5FD] to-[#DBEAFE]' :
-                    'from-[#BFDBFE] to-[#EFF6FF]'
-                  } shadow-[0_2px_4px_rgba(37,99,235,0.3)]`}
-                />
-              </div>
-            </motion.div>
-          ))}
+                <div className="flex items-center gap-2">
+                  <motion.span 
+                    key={app.used_time}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-[#64748B] font-medium group-hover:text-[#2563EB] transition-colors duration-300 text-sm"
+                  >
+                    {formatTime(app.used_time)}
+                  </motion.span>
+                  <div 
+                    className={`w-2 h-2 rounded-full bg-gradient-to-r ${
+                      index === 0 ? 'from-[#1E3A8A] to-[#2563EB]' :
+                      index === 1 ? 'from-[#3B82F6] to-[#93C5FD]' :
+                      index === 2 ? 'from-[#60A5FA] to-[#BFDBFE]' :
+                      index === 3 ? 'from-[#93C5FD] to-[#DBEAFE]' :
+                      'from-[#BFDBFE] to-[#EFF6FF]'
+                    } shadow-[0_2px_4px_rgba(37,99,235,0.3)]`}
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </AnimatePresence>
       </div>
     </div>

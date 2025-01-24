@@ -111,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home', userEmail, user
             transition={{ duration: 0.2 }}
           >
             <motion.img 
-              src="/src-tauri/icons/icon.png"
+              src="/src/assets/icon.png"
               alt="Samadhan"
               className="w-5 h-5 rounded-lg"
             />
@@ -125,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home', userEmail, user
                 exit={{ opacity: 0, x: -10, width: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                Hello, {username || 'User'}
+                Samadhan
               </motion.h2>
             )}
           </AnimatePresence>
@@ -196,7 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'home', userEmail, user
             transition={{ duration: 0.2 }}
           >
             <img 
-              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=faces"
+              src="https://cdn-icons-png.flaticon.com/512/219/219988.png"
               alt="User"
               className="w-full h-full object-cover"
             />
